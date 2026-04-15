@@ -29,8 +29,12 @@ function App() {
               />
             </svg>
           </div>
-          <h1>FireSight: Glasgow Risk Predictor</h1>
+          <div className="app-header-text">
+            <h1>FireSight: Glasgow Risk Predictor</h1>
+            <p>Operational risk view for Glasgow regions</p>
+          </div>
         </div>
+        <span className="app-header-badge">Live forecast</span>
       </header>
 
       <main className="app-main">

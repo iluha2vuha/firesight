@@ -7,7 +7,7 @@ const TIMEFRAME_ADJUSTMENTS = {
   'In 1.5 years': 12
 };
 
-const RiskLayer = ({ timeFrame = 'Current' }) => {
+const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null }) => {
   // Mock GeoJSON for Glasgow regions. 
   // Notice the "riskFactor" property determining the color.
   const glasgowData = {
@@ -138,13 +138,23 @@ const RiskLayer = ({ timeFrame = 'Current' }) => {
     return '#1a9850';                       // Green
   };
 
+  const getRiskBand = (riskFactor) => {
+    if (riskFactor >= 75) return 'high';
+    if (riskFactor >= 40) return 'medium';
+    return 'low';
+  };
+
   const styleRegion = (feature) => {
+    const riskFactor = feature.properties.adjustedRiskFactor;
+    const band = getRiskBand(riskFactor);
+    const isBandMatch = !hoveredRiskBand || hoveredRiskBand === band;
+
     return {
-      fillColor: getRiskColor(feature.properties.adjustedRiskFactor),
-      weight: 1, // Thin borders
-      opacity: 1,
-      color: 'white',
-      fillOpacity: 0.7
+      fillColor: getRiskColor(riskFactor),
+      weight: isBandMatch ? 2.6 : 1,
+      opacity: isBandMatch ? 1 : 0.55,
+      color: isBandMatch ? '#0f172a' : 'white',
+      fillOpacity: isBandMatch ? 0.9 : 0.28
     };
   };
 
@@ -156,26 +166,28 @@ const RiskLayer = ({ timeFrame = 'Current' }) => {
       // Using a clean HTML structure for the popup
       layer.bindPopup(`
         <div class="custom-popup" style="min-width: 220px;">
-            <h3 style="margin-bottom: 5px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+            <div class="popup-header">
+            <h3>
               ${p.name}
             </h3>
+            </div>
             
-            <div style="margin-bottom: 10px;">
-              <span style="font-size: 24px; font-weight: bold; color: ${getRiskColor(timeframeRisk)}">
+            <div class="popup-score">
+              <span class="popup-score-value" style="color: ${getRiskColor(timeframeRisk)}">
                 ${timeframeRisk}
               </span>
-              <span style="color: #666; font-size: 12px;">/ 100 Risk Score</span>
+              <span class="popup-score-label">/ 100 Risk Score</span>
             </div>
-            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;"><b>Time frame:</b> ${timeFrame}</p>
+            <p class="popup-timeframe"><b>Time frame:</b> ${timeFrame}</p>
 
-            <p style="margin: 5px 0;"><b>Category:</b> ${p.primaryRiskType}</p>
+            <p class="popup-row"><b>Category:</b> ${p.primaryRiskType}</p>
             
-            <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 10px;">
-              <p style="margin: 0 0 5px 0; font-size: 12px; color: #555;"><b>Primary Driver:</b><br/> ${p.driver}</p>
+            <div class="popup-card">
+              <p><b>Primary Driver:</b><br/> ${p.driver}</p>
             </div>
 
-            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 8px; margin-top: 10px;">
-              <p style="margin: 0; font-size: 12px;"><b>System Recommendation:</b><br/> ${p.action}</p>
+            <div class="popup-card action">
+              <p><b>System Recommendation:</b><br/> ${p.action}</p>
             </div>
         </div>
       `);      

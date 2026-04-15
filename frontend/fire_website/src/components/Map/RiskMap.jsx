@@ -1,17 +1,23 @@
 import { MapContainer, TileLayer } from 'react-leaflet';
 import RiskLayer from './RiskLayer';
 import MapLegend from './MapLegend';
+import { useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 
 const RiskMap = ({ timeFrame }) => {
+  const [hoveredRiskBand, setHoveredRiskBand] = useState(null);
+
   // Glasgow Coordinates: Latitude, Longitude
   const glasgowCenter = [55.8642, -4.2518];
 
   return (
     <div className="risk-map-container">
       {/* Our custom legend sits above the map */}
-      <MapLegend />
+      <MapLegend
+        hoveredRiskBand={hoveredRiskBand}
+        onRiskBandHover={setHoveredRiskBand}
+      />
 
       <MapContainer 
         center={glasgowCenter} 
@@ -26,7 +32,7 @@ const RiskMap = ({ timeFrame }) => {
         />
         
         {/* Render our polygons on top of the tile layer */}
-        <RiskLayer timeFrame={timeFrame} />
+        <RiskLayer timeFrame={timeFrame} hoveredRiskBand={hoveredRiskBand} />
 
       </MapContainer>
     </div>
