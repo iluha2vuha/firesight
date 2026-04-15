@@ -58,3 +58,32 @@
   margin-right: 10px;
   border: 1px solid #ccc;
 }
+
+/* Add these below your existing .map-legend rules in Map.css */
+
+.legend-subtitle {
+  font-size: 11px;
+  margin: 0 0 10px 0;
+  color: #666;
+}
+
+/* Base style for the box */
+.color-box {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+}
+
+/* Specific color modifiers */
+.color-box.risk-high {
+  background-color: #d73027;
+}
+
+.color-box.risk-medium {
+  background-color: #fdae61;
+}
+
+.color-box.risk-low {
+  background-color: #1a9850;
+}
