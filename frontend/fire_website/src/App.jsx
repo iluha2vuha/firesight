@@ -1,5 +1,5 @@
 import './App.css';
-import RiskMap from './components/RiskMap';
+import RiskMap from './components/Map/RiskMap';
 
 function App() {
   return (
