@@ -27,6 +27,24 @@ body, html {
   z-index: 1001; /* Above map and legend */
 }
 
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-header-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .app-header h1 {
   margin: 0;
   font-size: 1.5rem;
@@ -35,4 +53,35 @@ body, html {
 .app-main {
   flex-grow: 1;
   position: relative;
+}
+
+.timeframe-control {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1100;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+  font-family: sans-serif;
+}
+
+.timeframe-control label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.timeframe-control select {
+  min-width: 170px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  padding: 7px 9px;
+  font-size: 14px;
+  color: #111827;
 }

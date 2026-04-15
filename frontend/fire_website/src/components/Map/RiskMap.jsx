@@ -4,7 +4,7 @@ import MapLegend from './MapLegend';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 
-const RiskMap = () => {
+const RiskMap = ({ timeFrame }) => {
   // Glasgow Coordinates: Latitude, Longitude
   const glasgowCenter = [55.8642, -4.2518];
 
@@ -26,7 +26,7 @@ const RiskMap = () => {
         />
         
         {/* Render our polygons on top of the tile layer */}
-        <RiskLayer />
+        <RiskLayer timeFrame={timeFrame} />
 
       </MapContainer>
     </div>

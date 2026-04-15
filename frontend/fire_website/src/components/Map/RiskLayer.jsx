@@ -1,6 +1,13 @@
 import { GeoJSON } from 'react-leaflet';
 
-const RiskLayer = () => {
+const TIMEFRAME_ADJUSTMENTS = {
+  Current: 0,
+  'In 6 months': 4,
+  'In 1 year': 8,
+  'In 1.5 years': 12
+};
+
+const RiskLayer = ({ timeFrame = 'Current' }) => {
   // Mock GeoJSON for Glasgow regions. 
   // Notice the "riskFactor" property determining the color.
   const glasgowData = {
@@ -108,7 +115,23 @@ const RiskLayer = () => {
   ]
 };
 
-  // The logic that turns the 'riskFactor' integer into a color
+  const getAdjustedRiskFactor = (riskFactor) => {
+    const adjustment = TIMEFRAME_ADJUSTMENTS[timeFrame] ?? 0;
+    return Math.max(0, Math.min(100, riskFactor + adjustment));
+  };
+
+  const mapDataForTimeframe = {
+    ...glasgowData,
+    features: glasgowData.features.map((feature) => ({
+      ...feature,
+      properties: {
+        ...feature.properties,
+        adjustedRiskFactor: getAdjustedRiskFactor(feature.properties.riskFactor)
+      }
+    }))
+  };
+
+  // The logic that turns the risk integer into a color
   const getRiskColor = (riskFactor) => {
     if (riskFactor >= 75) return '#d73027'; // Red
     if (riskFactor >= 40) return '#fdae61'; // Orange
@@ -117,7 +140,7 @@ const RiskLayer = () => {
 
   const styleRegion = (feature) => {
     return {
-      fillColor: getRiskColor(feature.properties.riskFactor),
+      fillColor: getRiskColor(feature.properties.adjustedRiskFactor),
       weight: 1, // Thin borders
       opacity: 1,
       color: 'white',
@@ -128,7 +151,7 @@ const RiskLayer = () => {
   const onEachFeature = (feature, layer) => {
     if (feature.properties) {
       const p = feature.properties;
-      const isHighRisk = p.riskFactor >= 75;
+      const timeframeRisk = p.adjustedRiskFactor;
       
       // Using a clean HTML structure for the popup
       layer.bindPopup(`
@@ -138,11 +161,12 @@ const RiskLayer = () => {
             </h3>
             
             <div style="margin-bottom: 10px;">
-              <span style="font-size: 24px; font-weight: bold; color: ${getRiskColor(p.riskFactor)}">
-                ${p.riskFactor}
+              <span style="font-size: 24px; font-weight: bold; color: ${getRiskColor(timeframeRisk)}">
+                ${timeframeRisk}
               </span>
               <span style="color: #666; font-size: 12px;">/ 100 Risk Score</span>
             </div>
+            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;"><b>Time frame:</b> ${timeFrame}</p>
 
             <p style="margin: 5px 0;"><b>Category:</b> ${p.primaryRiskType}</p>
             
@@ -173,7 +197,8 @@ const RiskLayer = () => {
 
   return (
     <GeoJSON 
-      data={glasgowData} 
+      key={timeFrame}
+      data={mapDataForTimeframe}
       style={styleRegion} 
       onEachFeature={onEachFeature} 
     />
