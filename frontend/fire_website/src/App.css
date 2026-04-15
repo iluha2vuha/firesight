@@ -2,12 +2,37 @@
 body, html {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden; /* Prevents scrolling */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
 * {
   box-sizing: border-box;
+}
+
+.app-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: 15px 20px;
+  background-color: #b30000;
+  color: white;
+  font-family: sans-serif;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 1001; /* Above map and legend */
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.app-main {
+  flex-grow: 1;
+  position: relative;
 }

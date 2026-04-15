@@ -1,0 +1,60 @@
+/* src/components/Map/Map.css */
+
+/* Map Container */
+.risk-map-container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+/* Custom Popup Styling */
+.custom-popup {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+}
+
+.custom-popup h3 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.custom-popup .risk-high {
+  color: #d73027;
+  font-weight: bold;
+}
+
+/* Legend Styling (Matches your reference image) */
+.map-legend {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 15px;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 1000; /* Keeps it above the Leaflet map */
+  font-family: sans-serif;
+  width: 250px;
+}
+
+.map-legend h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  font-size: 13px;
+  color: #555;
+}
+
+.color-box {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+}

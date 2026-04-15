@@ -1,56 +1,35 @@
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import { MapContainer, TileLayer } from 'react-leaflet';
+import RiskLayer from './RiskLayer';
+import MapLegend from './MapLegend';
+import 'leaflet/dist/leaflet.css';
+import './Map.css';
 
 const RiskMap = () => {
-  const [geoData, setGeoData] = useState(null);
-
-  useEffect(() => {
-    // URL to your backend API (update this to your team's endpoint)
-    const backendApiUrl = "http://localhost:5000/api/fire-risk";
-
-    fetch(backendApiUrl)
-      .then((res) => res.json())
-      .then((data) => setGeoData(data))
-      .catch((err) => console.error("Error loading data:", err));
-  }, []);
-
-  const styleRegion = (feature) => {
-    const score = feature.properties.riskScore;
-    const color = score > 75 ? "#d73027" : score > 40 ? "#fee08b" : "#1a9850";
-    return { fillColor: color, weight: 2, color: "white", fillOpacity: 0.6 };
-  };
-
-  const onEachFeature = (feature, layer) => {
-    if (feature.properties) {
-      layer.bindPopup(`
-        <div style="font-size: 14px;">
-            <h3>${feature.properties.name || "Region"}</h3>
-            <b>Risk Score:</b> ${feature.properties.riskScore}<br/>
-            <b>Action:</b> ${feature.properties.action || "Investigate further"}
-        </div>
-      `);
-    }
-  };
+  // Glasgow Coordinates: Latitude, Longitude
+  const glasgowCenter = [55.8642, -4.2518];
 
   return (
-    <MapContainer
-      center={[51.505, -0.09]}
-      zoom={13}
-      style={{ height: "100%", width: "100%" }}
-    >
-      <TileLayer
-        attribution="&copy; OpenStreetMap"
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {geoData && (
-        <GeoJSON
-          data={geoData}
-          style={styleRegion}
-          onEachFeature={onEachFeature}
+    <div className="risk-map-container">
+      {/* Our custom legend sits above the map */}
+      <MapLegend />
+
+      <MapContainer 
+        center={glasgowCenter} 
+        zoom={13} 
+        className="risk-map-container"
+        zoomControl={false} // Optional: Hides default zoom controls if you want to build custom ones in MapControls.jsx
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" 
+          // Note: Using CartoDB basemap for a cleaner, professional look compared to default OSM
         />
-      )}
-    </MapContainer>
+        
+        {/* Render our polygons on top of the tile layer */}
+        <RiskLayer />
+
+      </MapContainer>
+    </div>
   );
 };
 
