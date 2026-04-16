@@ -21,7 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 WARDS_FILE = DATA_DIR / "glasgow_wards.geojson"
 PREMISES_FILE = DATA_DIR / "city_centre_premises.json"
-ZONES_CSV = BASE_DIR.parent / "data-pipeline" / "output" / "glasgowzones.csv"
+ZONES_CSV          = BASE_DIR.parent / "data-pipeline" / "output" / "glasgowzones.csv"
+WARD_FORECASTS_CSV = BASE_DIR.parent / "data-pipeline" / "output" / "glasgow_ward_forecasts.csv"
 
 if load_dotenv is not None:
     load_dotenv(BASE_DIR / ".env")
@@ -88,8 +89,22 @@ wards_by_id = {
 premises = load_premises()
 premises_by_id = {item["id"]: item for item in premises}
 
+def load_ward_forecasts() -> Dict[str, Dict[str, Any]]:
+    """Load real ward-level fire forecasts generated from 14 years of SFRS dwelling fire data."""
+    if not WARD_FORECASTS_CSV.exists():
+        return {}
+    try:
+        import pandas as pd
+    except ImportError:
+        return {}
+    df = pd.read_csv(WARD_FORECASTS_CSV)
+    df = df.where(pd.notna(df), None)
+    return {row["ward_id"]: row.to_dict() for _, row in df.iterrows()}
+
+
 zones: List[Dict[str, Any]] = load_zones()
 zones_by_id: Dict[str, Dict[str, Any]] = {z["zoneid"]: z for z in zones}
+ward_forecasts: Dict[str, Dict[str, Any]] = load_ward_forecasts()
 
 
 def build_decile_lookup(zone_list: List[Dict[str, Any]]) -> Dict[int, int]:
@@ -210,15 +225,24 @@ def ward_with_prediction(feature, use_model: bool = False):
             if decile is not None
             else props["risk_score"]
         )
-        model_prediction = {
-            "forecast_6mo": None,
-            "forecast_12mo": None,
-            "forecast_18mo": None,
-            "forecast_lower": None,
-            "forecast_upper": None,
-            "trend_pct": None,
-            "note": "Forecast unavailable — incident data pending",
-        }
+        wf = ward_forecasts.get(props["ward_id"], {})
+        if wf and wf.get("forecast_6mo") is not None:
+            model_prediction = {
+                "forecast_6mo":   round(float(wf["forecast_6mo"]), 1),
+                "forecast_12mo":  round(float(wf["forecast_12mo"]), 1) if wf.get("forecast_12mo") is not None else None,
+                "forecast_18mo":  round(float(wf["forecast_18mo"]), 1) if wf.get("forecast_18mo") is not None else None,
+                "forecast_lower": round(float(wf["forecast_lower"]), 1) if wf.get("forecast_lower") is not None else None,
+                "forecast_upper": round(float(wf["forecast_upper"]), 1) if wf.get("forecast_upper") is not None else None,
+                "trend_pct":      wf.get("trend_pct"),
+                "data_quality":   wf.get("data_quality", "sufficient"),
+                "note":           "Based on 14 years of SFRS accidental dwelling fire data (2009–2023).",
+            }
+        else:
+            model_prediction = {
+                "forecast_6mo": None, "forecast_12mo": None, "forecast_18mo": None,
+                "forecast_lower": None, "forecast_upper": None, "trend_pct": None,
+                "note": "Forecast unavailable — ward data pending",
+            }
         return {
             **feature,
             "properties": {
@@ -230,6 +254,7 @@ def ward_with_prediction(feature, use_model: bool = False):
                 "risk_band": risk_band(model_score),
                 "prediction": model_prediction,
                 "data_source": "model",
+                "model_components": 5,
             },
         }
 
@@ -274,13 +299,26 @@ def filter_premises(
 def fallback_ward_explanation(feature):
     props = feature["properties"]
     drivers = props.get("drivers", [])
-    driver_text = ", ".join(drivers[:2]) if drivers else "the available risk indicators"
+    driver1 = drivers[0] if drivers else "high deprivation"
+    driver2 = drivers[1] if len(drivers) > 1 else "housing risk factors"
     forecast = prediction_for(feature)
+    f6 = forecast["forecast_6mo"]
+    fl = forecast.get("forecast_lower", f6)
+    fu = forecast.get("forecast_upper", f6)
+    trend = forecast.get("trend_pct", 0) or 0
+    trend_word = "rising" if trend > 0 else "falling" if trend < 0 else "stable"
+    band = risk_band(props["risk_score"])
+    priority = "high" if band == "high" else "near-term" if band == "medium" else "routine"
     return (
-        f"{props['ward_name']} is flagged as a {risk_band(props['risk_score'])} prevention priority "
-        f"with a risk score of {props['risk_score']}/100, mainly because of {driver_text}. "
-        f"The 6-month forecast is {forecast['forecast_6mo']} incidents, so this should be treated "
-        "as a planning signal for targeted community safety activity rather than a prediction of a specific incident."
+        f"• Prevention targeting: {props['ward_name']} is a {priority} prevention priority — deploy "
+        f"community fire safety visits focused on {driver1} and {driver2}, prioritising Safe and Well "
+        f"referrals for households flagged by social care and housing registers.\n"
+        f"• Capacity planning: Forecast {f6} incidents over the next 6 months (range {fl}–{fu}); "
+        f"trend is {trend_word} ({'+' if trend >= 0 else ''}{trend}%). Plan prevention team visits "
+        f"proportionally and review station response capacity for any demand increase.\n"
+        f"• Key intervention: Prioritise smoke alarm installation and Home Fire Safety Check campaigns "
+        f"targeting the highest-risk households in this ward. Re-assess quarterly as new incident and "
+        f"housing data becomes available — this is a planning signal, not a prediction of specific incidents."
     )
 
 
@@ -294,13 +332,46 @@ def fallback_ward_explanation_model(feature):
     )
     band = risk_band(model_score)
     drivers = props.get("drivers", [])
-    driver_text = ", ".join(drivers[:2]) if drivers else "high area deprivation"
+    driver1 = drivers[0] if drivers else "high area deprivation"
+    priority = "high" if band == "high" else "near-term" if band == "medium" else "routine"
+
+    wf = ward_forecasts.get(props["ward_id"], {})
+    if wf and wf.get("forecast_6mo") is not None:
+        f6 = round(float(wf["forecast_6mo"]), 1)
+        fl = round(float(wf["forecast_lower"]), 1) if wf.get("forecast_lower") is not None else f6
+        fu = round(float(wf["forecast_upper"]), 1) if wf.get("forecast_upper") is not None else f6
+        trend = wf.get("trend_pct") or 0
+        trend_word = "rising" if trend > 0 else "falling" if trend < 0 else "stable"
+        n_years = int(wf["n_years"]) if wf.get("n_years") is not None else 14
+        capacity_line = (
+            f"SFRS dwelling fire data ({n_years} years, 2009–2023) forecasts {f6} incidents "
+            f"over the next 6 months (range {fl}–{fu}); demand trend is {trend_word} "
+            f"({'+' if trend >= 0 else ''}{trend}%) — plan prevention staffing and response capacity "
+            f"proportionally and flag to station commanders."
+        )
+        key_line = (
+            f"Prioritise smoke alarm installation and Home Fire Safety Check campaigns in this ward; "
+            f"risk score ({model_score}/100) is driven by SIMD 2020 deprivation (decile {decile}) — "
+            f"re-assess quarterly as additional Census 2022 and EPC data are loaded."
+        )
+    else:
+        capacity_line = (
+            f"Allocate prevention capacity proportional to deprivation level (SIMD decile {decile}); "
+            f"coordinate with housing, health, and social care partners to maximise Safe and Well "
+            f"referral volume."
+        )
+        key_line = (
+            f"Target smoke detector installation and Home Fire Safety Checks in private rented and "
+            f"social housing stock; score uses SIMD 2020 deprivation — incident forecast will be "
+            f"available once SFRS ward data is matched."
+        )
+
     return (
-        f"{props['ward_name']} has a model risk score of {model_score}/100 ({band} priority band), "
-        f"derived from SIMD 2020 area deprivation data (decile {decile}). "
-        f"The primary risk factor is {driver_text} — deprivation is currently the sole active "
-        f"component in the five-factor linear model (Census 2022 and SFRS incident data are pending). "
-        "Incident forecasts will activate automatically once historical fire data is loaded into the pipeline."
+        f"• Prevention targeting: {props['ward_name']} scores {model_score}/100 ({priority} priority) "
+        f"based on SIMD 2020 deprivation data (decile {decile}) — prioritise proactive community safety "
+        f"outreach here, focusing on {driver1} as the primary modifiable risk factor.\n"
+        f"• Capacity planning: {capacity_line}\n"
+        f"• Key intervention: {key_line}"
     )
 
 
@@ -308,12 +379,49 @@ def fallback_premises_explanation(item):
     drivers = item.get("drivers", [])
     driver_text = ", ".join(drivers[:3]) if drivers else "the available premises risk indicators"
     pressure = item.get("future_pressure", {})
-    pressure_text = pressure.get("reason", "future demand pressure in the city centre")
+    pressure_reason = pressure.get("reason", "future demand pressure in the city centre")
+    timeframe = pressure.get("timeframe", "the next planning period")
+    intervention = item.get("recommended_intervention") or "conduct a full fire risk assessment review"
     return (
-        f"This premises is flagged as {item['inspection_priority']} because it combines "
-        f"{driver_text}. {pressure_text.capitalize()} may affect prevention demand over the "
-        f"{pressure.get('timeframe', 'next planning period')}. This should be treated as a "
-        "prevention-review and inspection-prioritisation signal, not an official safety judgement."
+        f"• Protection action: {item['name']} is flagged as {item['inspection_priority']} inspection "
+        f"priority — schedule a protection visit within the next planning cycle to address {driver_text}.\n"
+        f"• Capacity planning: Account for {pressure_reason} over {timeframe} when allocating protection "
+        f"officer resource; re-inspect before any significant occupancy or structural change occurs.\n"
+        f"• Key intervention: {intervention[:1].upper() + intervention[1:]} and verify fire safety "
+        f"management plans are current. Flag for partnership working with building control if changes "
+        f"are planned. This is an inspection-prioritisation signal, not an official safety judgement."
+    )
+
+
+def fallback_zone_explanation(zone: Dict[str, Any]) -> str:
+    name = zone.get("zonename") or zone.get("zoneid", "This zone")
+    score = zone.get("riskscore") or 0
+    band = risk_band(score)
+    drivers = zone.get("drivers") or []
+    driver1 = drivers[0] if drivers else "high area deprivation"
+    driver2 = drivers[1] if len(drivers) > 1 else "housing risk factors"
+    f6 = zone.get("forecast6mo")
+    trend = zone.get("trendpct") or 0
+    trend_word = "rising" if trend > 0 else "falling" if trend < 0 else "stable"
+    priority = "high" if band == "high" else "near-term" if band == "medium" else "routine"
+    quality = zone.get("data_quality", "sufficient")
+
+    forecast_line = (
+        f"Forecast {round(f6, 1)} incidents over the next 6 months (trend {trend_word}, {'+' if trend >= 0 else ''}{trend}%)."
+        if f6 is not None
+        else "Incident forecast unavailable — additional data required."
+    )
+    quality_note = " Forecast uses pooled Glasgow trend (limited local data)." if quality == "pooled" else ""
+
+    return (
+        f"• Prevention targeting: {name} is a {priority} prevention priority (risk score {score}/100) — "
+        f"deploy community fire safety visits focused on {driver1} and {driver2}, prioritising Safe and Well "
+        f"referrals for households flagged by social care and housing registers.\n"
+        f"• Capacity planning: {forecast_line}{quality_note} "
+        f"Allocate prevention team capacity proportionally and review Safe and Well referral pathways.\n"
+        f"• Key intervention: Prioritise smoke alarm installation and Home Fire Safety Checks targeting "
+        f"the highest-risk households. Re-assess this zone as Census 2022, SFRS incident, and EPC data "
+        f"are added to the model pipeline."
     )
 
 
@@ -327,6 +435,8 @@ def build_explain_payload(mode, record, source: str = "mock"):
                 if decile is not None
                 else props["risk_score"]
             )
+            wf = ward_forecasts.get(props["ward_id"], {})
+            forecast_available = bool(wf and wf.get("forecast_6mo") is not None)
             return {
                 "mode": "ward",
                 "data_source": "linear_model",
@@ -337,8 +447,20 @@ def build_explain_payload(mode, record, source: str = "mock"):
                 "drivers": props.get("drivers", []),
                 "active_model_components": 1,
                 "total_model_components": 5,
-                "forecast_available": False,
-                "note": "Score derived from SIMD 2020 deprivation index. Census and incident data pending.",
+                "forecast_available": forecast_available,
+                "forecast_6mo": round(float(wf["forecast_6mo"]), 1) if forecast_available else None,
+                "forecast_12mo": round(float(wf["forecast_12mo"]), 1) if forecast_available and wf.get("forecast_12mo") is not None else None,
+                "forecast_lower": round(float(wf["forecast_lower"]), 1) if forecast_available and wf.get("forecast_lower") is not None else None,
+                "forecast_upper": round(float(wf["forecast_upper"]), 1) if forecast_available and wf.get("forecast_upper") is not None else None,
+                "trend_pct": wf.get("trend_pct") if forecast_available else None,
+                "data_quality": wf.get("data_quality", "sufficient") if forecast_available else None,
+                "n_years": int(wf["n_years"]) if forecast_available and wf.get("n_years") is not None else None,
+                "latest_annual": wf.get("latest_annual") if forecast_available else None,
+                "data_basis": (
+                    "Risk score: SIMD 2020 deprivation index. "
+                    "Forecast: OLS linear model on 14 years of SFRS accidental dwelling fire data (2009–2023), "
+                    "recency-weighted, 95% confidence interval shown."
+                ),
             }
         return {
             "mode": "ward",
@@ -350,6 +472,21 @@ def build_explain_payload(mode, record, source: str = "mock"):
             "planned_homes": props.get("planned_homes"),
             "planning_applications": props.get("planning_applications"),
             "prediction": prediction_for(record),
+        }
+
+    if mode == "zone":
+        return {
+            "mode": "zone",
+            "name": record.get("zonename") or record.get("zoneid"),
+            "risk_score": record.get("riskscore"),
+            "risk_band": risk_band(record.get("riskscore") or 0),
+            "simd_decile": record.get("simddecile"),
+            "drivers": record.get("drivers", []),
+            "forecast_6mo": record.get("forecast6mo"),
+            "trend_pct": record.get("trendpct"),
+            "data_quality": record.get("data_quality"),
+            "population": record.get("population"),
+            "pct_over_65": record.get("pctover65"),
         }
 
     return {
@@ -366,6 +503,63 @@ def build_explain_payload(mode, record, source: str = "mock"):
     }
 
 
+def _ai_context(mode, record, source: str = "mock") -> str:
+    """Build the minimal one-line context string sent to OpenAI."""
+    if mode == "ward":
+        props = record["properties"]
+        drivers = props.get("drivers", [])
+        d = ", ".join(drivers[:2]) or "deprivation"
+        if source == "model":
+            decile = props.get("simd_decile", "?")
+            wf = ward_forecasts.get(props["ward_id"], {})
+            score = decile_to_model_score.get(int(decile), props["risk_score"]) if decile != "?" else props["risk_score"]
+            band = risk_band(score)
+            if wf and wf.get("forecast_6mo") is not None:
+                f6 = round(float(wf["forecast_6mo"]), 1)
+                fl = round(float(wf["forecast_lower"]), 1) if wf.get("forecast_lower") is not None else f6
+                fu = round(float(wf["forecast_upper"]), 1) if wf.get("forecast_upper") is not None else f6
+                trend = wf.get("trend_pct") or 0
+                return (
+                    f"Ward: {props['ward_name']} | Risk: {score}/100 ({band}) | SIMD decile: {decile} "
+                    f"| Drivers: {d} | Forecast: {f6}/6mo (CI {fl}–{fu}) | Trend: {trend:+}%"
+                )
+            return f"Ward: {props['ward_name']} | Risk: {score}/100 ({band}) | SIMD decile: {decile} | Drivers: {d}"
+        pred = prediction_for(record)
+        f6 = pred.get("forecast_6mo")
+        trend = pred.get("trend_pct", 0) or 0
+        score = props["risk_score"]
+        band = risk_band(score)
+        forecast_part = f" | Forecast: {f6}/6mo | Trend: {trend:+}%" if f6 is not None else ""
+        return f"Ward: {props['ward_name']} | Risk: {score}/100 ({band}) | Drivers: {d}{forecast_part}"
+
+    if mode == "zone":
+        name = record.get("zonename") or record.get("zoneid", "zone")
+        score = record.get("riskscore") or 0
+        band = risk_band(score)
+        decile = record.get("simddecile", "?")
+        drivers = record.get("drivers") or []
+        d = ", ".join(drivers[:2]) or "deprivation"
+        f6_raw = record.get("forecast6mo")
+        trend_raw = record.get("trendpct")
+        try:
+            f6 = round(float(f6_raw), 1) if f6_raw is not None and not math.isnan(float(f6_raw)) else None
+        except (TypeError, ValueError):
+            f6 = None
+        try:
+            trend = float(trend_raw) if trend_raw is not None and not math.isnan(float(trend_raw)) else None
+        except (TypeError, ValueError):
+            trend = None
+        forecast_part = f" | Forecast: {f6}/6mo | Trend: {trend:+}%" if f6 is not None and trend is not None else ""
+        return f"Zone: {name} | Risk: {score}/100 ({band}) | SIMD decile: {decile} | Drivers: {d}{forecast_part}"
+
+    # premises
+    d = ", ".join(record.get("drivers", [])[:2]) or "premises risk factors"
+    return (
+        f"Premises: {record['name']} | Type: {record.get('premises_type','?')} "
+        f"| Risk: {record['risk_band']} | Priority: {record['inspection_priority']} | Drivers: {d}"
+    )
+
+
 def openai_explanation(mode, record, source: str = "mock"):
     if not os.getenv("OPENAI_API_KEY"):
         return None
@@ -375,12 +569,11 @@ def openai_explanation(mode, record, source: str = "mock"):
     except ImportError:
         return None
 
-    payload = build_explain_payload(mode, record, source=source)
+    context = _ai_context(mode, record, source)
     system_prompt = (
-        "You are a fire prevention analyst supporting a UK Fire and Rescue Service. "
-        "Explain risk in plain English for non-technical planners. Use only the data provided. "
-        "Do not say a building is unsafe. Say it is flagged for prevention review or inspection prioritisation. "
-        "Do not claim a specific incident will happen. Write exactly three concise sentences."
+        "UK fire service analyst. Given area risk data, write exactly 3 bullet points (•) covering: "
+        "(1) where to target prevention activity, (2) how to plan capacity from the forecast, "
+        "(3) the single most impactful intervention. One sentence each. No incident predictions."
     )
 
     try:
@@ -389,10 +582,10 @@ def openai_explanation(mode, record, source: str = "mock"):
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": json.dumps(payload)},
+                {"role": "user", "content": context},
             ],
             temperature=0.3,
-            max_tokens=180,
+            max_tokens=160,
         )
         return response.choices[0].message.content
     except Exception:
@@ -417,11 +610,15 @@ def health():
 
 @app.get("/api/status")
 def api_status():
-    forecast_available = any(z.get("forecast6mo") is not None for z in zones)
+    zone_forecast_available = any(z.get("forecast6mo") is not None for z in zones)
+    n_components = max((z.get("n_score_components") or 0 for z in zones), default=0)
     return {
         "model_loaded": len(zones) > 0,
         "zones_count": len(zones),
-        "forecast_available": forecast_available,
+        "forecast_available": zone_forecast_available or len(ward_forecasts) > 0,
+        "ward_forecasts_count": len(ward_forecasts),
+        "model_components_active": n_components,
+        "model_components_total": 5,
     }
 
 
@@ -509,13 +706,18 @@ def explain(
             if source == "model"
             else fallback_ward_explanation(record)
         )
+    elif mode == "zone":
+        record = zones_by_id.get(record_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="Zone not found")
+        fallback = fallback_zone_explanation(record)
     elif mode == "premises":
         record = premises_by_id.get(record_id)
         if record is None:
             raise HTTPException(status_code=404, detail="Premises not found")
         fallback = fallback_premises_explanation(record)
     else:
-        raise HTTPException(status_code=400, detail="Mode must be 'ward' or 'premises'")
+        raise HTTPException(status_code=400, detail="Mode must be 'ward', 'zone', or 'premises'")
 
     live_text = openai_explanation(mode, record, source=source)
     return {

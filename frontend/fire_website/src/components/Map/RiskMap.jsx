@@ -2,16 +2,18 @@ import { useState } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import EventLayer from './EventLayer';
 import MapLegend from './MapLegend';
-import FutureBuildingsLayer from './FutureBuildingsLayer';
 import PremisesLayer from './PremisesLayer';
 import RiskLayer from './RiskLayer';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 
-const RiskMap = ({ timeFrame, dataSource = 'mock', nightMode = false }) => {
+const RiskMap = ({
+  timeFrame,
+  dataSource = 'mock',
+  nightMode = false,
+  showPremises = true,
+}) => {
   const [hoveredRiskBand, setHoveredRiskBand] = useState(null);
-  const [showPremises, setShowPremises] = useState(false);
-  const [showFutureBuildings, setShowFutureBuildings] = useState(true);
   const glasgowCenter = [55.8642, -4.2518];
 
   return (
@@ -20,28 +22,6 @@ const RiskMap = ({ timeFrame, dataSource = 'mock', nightMode = false }) => {
         hoveredRiskBand={hoveredRiskBand}
         onRiskBandHover={setHoveredRiskBand}
       />
-
-      <div className="map-controls">
-        <div className="map-controls-stack">
-          <label className="map-toggle">
-            <input
-              type="checkbox"
-              checked={showFutureBuildings}
-              onChange={(e) => setShowFutureBuildings(e.target.checked)}
-            />
-            <span>Show Future Builds</span>
-          </label>
-
-          <label className="map-toggle">
-            <input
-              type="checkbox"
-              checked={showPremises}
-              onChange={(e) => setShowPremises(e.target.checked)}
-            />
-            <span>Show High-Risk Premises</span>
-          </label>
-        </div>
-      </div>
 
       <MapContainer
         center={glasgowCenter}
@@ -59,7 +39,6 @@ const RiskMap = ({ timeFrame, dataSource = 'mock', nightMode = false }) => {
         />
 
         <RiskLayer timeFrame={timeFrame} hoveredRiskBand={hoveredRiskBand} dataSource={dataSource} />
-        {showFutureBuildings && <FutureBuildingsLayer timeFrame={timeFrame} focus="city-centre" />}
         {showPremises && <PremisesLayer timeFrame={timeFrame} focus="city-centre" riskBandFilter="high" />}
         <EventLayer timeFrame={timeFrame} />
       </MapContainer>

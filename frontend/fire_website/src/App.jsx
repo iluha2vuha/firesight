@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import RiskMap from './components/Map/RiskMap';
+import TopRiskAreas from './components/Dashboard/TopRiskAreas';
 
 const TIME_FRAME_OPTIONS = ['Current', 'In 6 months', 'In 1 year', 'In 1.5 years'];
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
@@ -9,11 +10,13 @@ function App() {
   const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[0]);
   const [dataSource, setDataSource] = useState('mock');
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [showPremises, setShowPremises] = useState(true);
   const [nightMode, setNightMode] = useState(() => {
     try {
-      return window.localStorage.getItem('fireSightNightMode') === 'true';
+      const stored = window.localStorage.getItem('fireSightNightMode');
+      return stored === null ? true : stored === 'true';
     } catch {
-      return false;
+      return true;
     }
   });
 
@@ -25,7 +28,7 @@ function App() {
   }, []);
 
   return (
-    <div className="app-container">
+    <div className={`app-container${nightMode ? ' night-mode' : ''}`}>
       <header className="app-header">
         <div className="app-header-brand">
           <div className="app-header-logo" aria-hidden="true">
@@ -115,9 +118,29 @@ function App() {
               </option>
             ))}
           </select>
+
+          <div className="layer-toggles">
+            <label className="layer-toggle">
+              <input
+                type="checkbox"
+                checked={showPremises}
+                onChange={(e) => setShowPremises(e.target.checked)}
+              />
+              <span>High-risk premises</span>
+            </label>
+          </div>
         </div>
 
-        <RiskMap timeFrame={timeFrame} dataSource={dataSource} nightMode={nightMode} />
+        <RiskMap
+          timeFrame={timeFrame}
+          dataSource={dataSource}
+          nightMode={nightMode}
+          showPremises={showPremises}
+        />
+
+        <div className={`top-risk-panel${nightMode ? ' night-mode' : ''}`}>
+          <TopRiskAreas dataSource={dataSource} />
+        </div>
       </main>
     </div>
   );
