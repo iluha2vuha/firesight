@@ -1,0 +1,352 @@
+[
+  {
+    "id": "P001",
+    "name": "High-rise residential block, Anderston",
+    "lat": 55.8619,
+    "lng": -4.2667,
+    "ward_id": "S13002976",
+    "ward_name": "Anderston/City/Yorkhill",
+    "focus": "city-centre",
+    "premises_type": "High-rise residential",
+    "primary_risk_type": "Domestic - High Rise",
+    "risk_score": 88,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "Evacuation complexity",
+      "Dense residential occupancy",
+      "Limited appliance access"
+    ],
+    "future_pressure": {
+      "timeframe": "6 months",
+      "trend": "rising",
+      "reason": "City-centre demand and planned development pressure"
+    },
+    "recommended_intervention": "Prioritise for Home Fire Safety Visit campaign and review high-rise operational intelligence."
+  },
+  {
+    "id": "P002",
+    "name": "Late-night mixed-use premises, Merchant City",
+    "lat": 55.8594,
+    "lng": -4.2456,
+    "ward_id": "S13002975",
+    "ward_name": "Calton",
+    "focus": "city-centre",
+    "premises_type": "Mixed-use nightlife premises",
+    "primary_risk_type": "Commercial - Night-time Economy",
+    "risk_score": 91,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "Late-night occupancy",
+      "Commercial kitchen extraction risk",
+      "Residential units above commercial space"
+    ],
+    "future_pressure": {
+      "timeframe": "6 months",
+      "trend": "rising",
+      "reason": "Seasonal uplift from evening economy and event footfall"
+    },
+    "recommended_intervention": "Schedule joint prevention review with licensing and focus on means of escape, extraction systems, and alarm management."
+  },
+  {
+    "id": "P003",
+    "name": "Student accommodation cluster, Cowcaddens",
+    "lat": 55.8662,
+    "lng": -4.2554,
+    "ward_id": "S13002976",
+    "ward_name": "Anderston/City/Yorkhill",
+    "focus": "city-centre",
+    "premises_type": "Student accommodation",
+    "primary_risk_type": "Domestic - Student",
+    "risk_score": 74,
+    "risk_band": "medium",
+    "inspection_priority": "Priority 2",
+    "drivers": [
+      "High turnover occupancy",
+      "Cooking-related false alarm demand",
+      "Dense accommodation blocks"
+    ],
+    "future_pressure": {
+      "timeframe": "6 months",
+      "trend": "rising",
+      "reason": "New academic term increases mobilisation demand"
+    },
+    "recommended_intervention": "Coordinate start-of-term community safety messaging and review alarm activation patterns with accommodation managers."
+  },
+  {
+    "id": "P004",
+    "name": "Historic tenement block, Garnethill",
+    "lat": 55.8668,
+    "lng": -4.2684,
+    "ward_id": "S13002976",
+    "ward_name": "Anderston/City/Yorkhill",
+    "focus": "city-centre",
+    "premises_type": "Older tenement residential",
+    "primary_risk_type": "Domestic - Tenement",
+    "risk_score": 86,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "Older building fabric",
+      "Common stair evacuation complexity",
+      "Constrained appliance access"
+    ],
+    "future_pressure": {
+      "timeframe": "12 months",
+      "trend": "stable-high",
+      "reason": "Persistent city-centre residential density"
+    },
+    "recommended_intervention": "Flag for prevention review focused on common stair safety, smoke alarm coverage, and operational access intelligence."
+  },
+  {
+    "id": "P005",
+    "name": "Civic event venue, George Square",
+    "lat": 55.8609,
+    "lng": -4.2507,
+    "ward_id": "S13002976",
+    "ward_name": "Anderston/City/Yorkhill",
+    "focus": "city-centre",
+    "premises_type": "Civic event venue",
+    "primary_risk_type": "Event-Driven",
+    "risk_score": 68,
+    "risk_band": "medium",
+    "inspection_priority": "Priority 2",
+    "drivers": [
+      "Large event footfall",
+      "Temporary occupancy peaks",
+      "Dynamic evacuation management"
+    ],
+    "future_pressure": {
+      "timeframe": "6 months",
+      "trend": "event-dependent",
+      "reason": "Risk increases around scheduled public events"
+    },
+    "recommended_intervention": "Use event schedules to inform resource allocation and review temporary event fire safety arrangements."
+  },
+  {
+    "id": "P006",
+    "name": "Retail and food court complex, Buchanan Street",
+    "lat": 55.8625,
+    "lng": -4.2531,
+    "ward_id": "S13002976",
+    "ward_name": "Anderston/City/Yorkhill",
+    "focus": "city-centre",
+    "premises_type": "Retail complex",
+    "primary_risk_type": "Commercial - Kitchens",
+    "risk_score": 79,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "High public occupancy",
+      "Food vendor extraction systems",
+      "Complex internal layout"
+    ],
+    "future_pressure": {
+      "timeframe": "6 months",
+      "trend": "rising",
+      "reason": "Retail footfall and seasonal demand increase"
+    },
+    "recommended_intervention": "Prioritise commercial fire safety review of escape routes, extraction maintenance, and alarm procedures."
+  },
+  {
+    "id": "P007",
+    "name": "Older mixed-use block, Saltmarket",
+    "lat": 55.8557,
+    "lng": -4.2447,
+    "ward_id": "S13002975",
+    "ward_name": "Calton",
+    "focus": "city-centre",
+    "premises_type": "Mixed-use tenement",
+    "primary_risk_type": "Mixed Use - Residential Above Commercial",
+    "risk_score": 93,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "Older housing stock",
+      "Commercial premises below dwellings",
+      "High surrounding deprivation context"
+    ],
+    "future_pressure": {
+      "timeframe": "12 months",
+      "trend": "rising",
+      "reason": "Neighbourhood vulnerability and regeneration pressure"
+    },
+    "recommended_intervention": "Prioritise inspection and community safety intervention focused on escape routes, alarms, and mixed-use risk."
+  },
+  {
+    "id": "P008",
+    "name": "Transport interchange premises, Central Station",
+    "lat": 55.8597,
+    "lng": -4.2576,
+    "ward_id": "S13002976",
+    "ward_name": "Anderston/City/Yorkhill",
+    "focus": "city-centre",
+    "premises_type": "Transport interchange",
+    "primary_risk_type": "Transport - High Footfall",
+    "risk_score": 77,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "High transient occupancy",
+      "Complex evacuation routes",
+      "Peak-time mobilisation demand"
+    ],
+    "future_pressure": {
+      "timeframe": "6 months",
+      "trend": "stable-high",
+      "reason": "Consistent transport footfall and nearby commercial activity"
+    },
+    "recommended_intervention": "Review operational intelligence for access points, evacuation routes, and coordination with premises managers."
+  },
+  {
+    "id": "P009",
+    "name": "Hotel premises, Theatre District",
+    "lat": 55.8647,
+    "lng": -4.2598,
+    "ward_id": "S13002976",
+    "ward_name": "Anderston/City/Yorkhill",
+    "focus": "city-centre",
+    "premises_type": "Hotel",
+    "primary_risk_type": "Sleeping Risk - Hotel",
+    "risk_score": 81,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "Sleeping risk",
+      "Visitor unfamiliarity with escape routes",
+      "Night-time occupancy"
+    ],
+    "future_pressure": {
+      "timeframe": "6 months",
+      "trend": "event-dependent",
+      "reason": "Visitor numbers increase around events and seasonal tourism"
+    },
+    "recommended_intervention": "Flag for inspection priority focused on sleeping risk, alarm procedures, and staff evacuation training."
+  },
+  {
+    "id": "P010",
+    "name": "Basement entertainment venue, Sauchiehall Street",
+    "lat": 55.8651,
+    "lng": -4.2658,
+    "ward_id": "S13002976",
+    "ward_name": "Anderston/City/Yorkhill",
+    "focus": "city-centre",
+    "premises_type": "Basement entertainment venue",
+    "primary_risk_type": "Commercial - Assembly",
+    "risk_score": 89,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "Basement evacuation complexity",
+      "Late-night assembly occupancy",
+      "Constrained means of escape"
+    ],
+    "future_pressure": {
+      "timeframe": "6 months",
+      "trend": "rising",
+      "reason": "Night-time economy demand and seasonal footfall"
+    },
+    "recommended_intervention": "Prioritise review of means of escape, occupancy management, and alarm response procedures."
+  },
+  {
+    "id": "P011",
+    "name": "Sheltered residential scheme, Calton",
+    "lat": 55.8515,
+    "lng": -4.2268,
+    "ward_id": "S13002975",
+    "ward_name": "Calton",
+    "focus": "city-centre",
+    "premises_type": "Sheltered residential",
+    "primary_risk_type": "Domestic - Vulnerable Occupancy",
+    "risk_score": 84,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "Vulnerable occupancy",
+      "Potential evacuation support needs",
+      "High deprivation context"
+    ],
+    "future_pressure": {
+      "timeframe": "12 months",
+      "trend": "stable-high",
+      "reason": "Persistent vulnerability indicators in the surrounding ward"
+    },
+    "recommended_intervention": "Prioritise Home Fire Safety Visit coordination and review person-centred risk information with partners."
+  },
+  {
+    "id": "P012",
+    "name": "Office-to-residential conversion, Trongate",
+    "lat": 55.8569,
+    "lng": -4.2451,
+    "ward_id": "S13002975",
+    "ward_name": "Calton",
+    "focus": "city-centre",
+    "premises_type": "Residential conversion",
+    "primary_risk_type": "Future Development - Conversion",
+    "risk_score": 72,
+    "risk_band": "medium",
+    "inspection_priority": "Priority 2",
+    "drivers": [
+      "Change of use",
+      "Future occupancy growth",
+      "Mixed building layout"
+    ],
+    "future_pressure": {
+      "timeframe": "18 months",
+      "trend": "rising",
+      "reason": "Conversion activity may increase residential demand in the area"
+    },
+    "recommended_intervention": "Track through planning intelligence and flag for review once occupancy profile changes."
+  },
+  {
+    "id": "P013",
+    "name": "Multi-storey car park and retail frontage, City Centre",
+    "lat": 55.8612,
+    "lng": -4.2524,
+    "ward_id": "S13002976",
+    "ward_name": "Anderston/City/Yorkhill",
+    "focus": "city-centre",
+    "premises_type": "Car park and retail frontage",
+    "primary_risk_type": "Access - Complex Layout",
+    "risk_score": 63,
+    "risk_band": "medium",
+    "inspection_priority": "Priority 2",
+    "drivers": [
+      "Complex internal access",
+      "Vehicle fire load",
+      "Adjacent retail occupancy"
+    ],
+    "future_pressure": {
+      "timeframe": "12 months",
+      "trend": "stable",
+      "reason": "Consistent city-centre traffic and retail demand"
+    },
+    "recommended_intervention": "Maintain operational intelligence on access routes, hydrant availability, and internal compartment layout."
+  },
+  {
+    "id": "P014",
+    "name": "Older residential block, Townhead edge",
+    "lat": 55.8633,
+    "lng": -4.2389,
+    "ward_id": "S13002975",
+    "ward_name": "Calton",
+    "focus": "city-centre",
+    "premises_type": "Older residential block",
+    "primary_risk_type": "Domestic - Older Housing",
+    "risk_score": 76,
+    "risk_band": "high",
+    "inspection_priority": "Priority 1",
+    "drivers": [
+      "Older housing condition",
+      "Dense residential occupancy",
+      "Elevated ward-level vulnerability"
+    ],
+    "future_pressure": {
+      "timeframe": "6 months",
+      "trend": "stable-high",
+      "reason": "Persistent domestic dwelling fire vulnerability indicators"
+    },
+    "recommended_intervention": "Target for prevention review and community safety engagement around smoke alarm coverage and escape planning."
+  }
+]
