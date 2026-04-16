@@ -27,6 +27,7 @@ WARD_FORECASTS_CSV = BASE_DIR.parent / "data-pipeline" / "output" / "glasgow_war
 if load_dotenv is not None:
     load_dotenv(BASE_DIR / ".env")
 
+# TODO: Restrict origins to the frontend domain in production (e.g. ["http://localhost:5173"])
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -577,7 +578,7 @@ def openai_explanation(mode, record, source: str = "mock"):
     )
 
     try:
-        client = OpenAI(timeout=5.0)
+        client = OpenAI(timeout=15.0)
         response = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
             messages=[

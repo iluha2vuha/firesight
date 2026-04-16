@@ -38,7 +38,6 @@ build/
 # Node
 node_modules/
 frontend/fire_website/.vite/
-package-lock.json
 
 # IDEs
 .vscode/settings.json
@@ -48,3 +47,5 @@ package-lock.json
 
 # Data pipeline — large raw files not needed in repo
 data-pipeline/raw/*.geojson
+data-pipeline/raw/*.csv
+data-pipeline/raw/*.xlsx
