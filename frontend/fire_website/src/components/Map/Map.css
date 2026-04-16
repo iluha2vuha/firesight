@@ -7,6 +7,16 @@
   position: relative;
 }
 
+/* Make the basemap feel cleaner / lighter */
+.risk-map-container .leaflet-tile {
+  filter: grayscale(1) saturate(0.7) contrast(0.92) brightness(1.06);
+  opacity: 0.88;
+}
+
+.risk-map-container .leaflet-tile-pane {
+  filter: contrast(0.98);
+}
+
 /* Custom Popup Styling */
 .custom-popup {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -141,6 +151,164 @@
 
 .risk-map-container .leaflet-interactive {
   transition: fill-opacity 0.16s ease, opacity 0.16s ease, stroke-width 0.16s ease;
+}
+
+/* Map controls (top-left) */
+.map-controls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+  padding: 10px 12px;
+  backdrop-filter: blur(4px);
+}
+
+.map-controls-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #0f172a;
+  user-select: none;
+}
+
+.map-toggle input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  accent-color: #0f172a;
+}
+
+/* Premises markers pane: sit above polygons, below events */
+.leaflet-container.risk-map-container .leaflet-premisesMarkers-pane {
+  z-index: 520 !important;
+}
+
+/* Future builds should sit above polygons, below premises + events */
+.leaflet-container.risk-map-container .leaflet-futureBuildings-pane {
+  z-index: 510 !important;
+}
+
+/* Premises markers */
+.leaflet-marker-icon.premises-marker-icon-root {
+  background: transparent !important;
+  border: none !important;
+}
+
+.premises-marker-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.9);
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.premises-marker-glyph {
+  font-size: 14px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1;
+  transform: translateY(-0.5px);
+}
+
+/* Future build markers */
+.leaflet-marker-icon.future-build-marker-icon-root {
+  background: transparent !important;
+  border: none !important;
+}
+
+.future-build-marker-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px dashed rgba(100, 116, 139, 0.95);
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.future-build-marker-icon {
+  color: rgba(15, 23, 42, 0.88);
+  display: block;
+  transform: translateY(-0.25px);
+}
+
+/* Popup AI explain section */
+.popup-ai {
+  margin-top: 10px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 10px;
+}
+
+.popup-ai-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.popup-ai-button {
+  appearance: none;
+  border: 1px solid rgba(148, 163, 184, 0.95);
+  background: rgba(248, 250, 252, 0.92);
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+  padding: 7px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+  white-space: nowrap;
+}
+
+.popup-ai-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.popup-ai-button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.popup-ai-meta {
+  font-size: 10px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.popup-ai-text {
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.35;
+  background: rgba(248, 250, 252, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 10px;
+  padding: 8px 9px;
 }
 
 .event-popup {

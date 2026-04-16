@@ -22,6 +22,11 @@ const getRiskBand = (riskFactor) => {
   return 'low';
 };
 
+const safeText = (value) => {
+  if (value === null || value === undefined) return '';
+  return String(value);
+};
+
 const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource = 'mock' }) => {
   const [geoData, setGeoData] = useState(null);
   const [error, setError] = useState(null);
@@ -93,10 +98,10 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
 
     return {
       fillColor: getRiskColor(riskFactor),
-      weight: isBandMatch ? 2.6 : 1,
-      opacity: isBandMatch ? 1 : 0.55,
-      color: isBandMatch ? '#0f172a' : 'white',
-      fillOpacity: isBandMatch ? 0.9 : 0.28
+      weight: isBandMatch ? 1.8 : 1,
+      opacity: isBandMatch ? 0.95 : 0.35,
+      color: '#ffffff',
+      fillOpacity: isBandMatch ? 0.42 : 0.12
     };
   };
 
@@ -104,6 +109,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
     if (!feature.properties) return;
 
     const p = feature.properties;
+    const wardId = safeText(p.ward_id ?? p.id ?? '');
     const timeframeRisk = p.adjustedRiskFactor;
     const drivers = Array.isArray(p.drivers) ? p.drivers : [];
     const prediction = p.prediction ?? {};
@@ -144,13 +150,82 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
         <div class="popup-card action">
           <p><b>System Recommendation:</b><br/> Prioritise prevention review and targeted community safety activity for this ward.</p>
         </div>
+
+        <div class="popup-ai">
+          <div class="popup-ai-row">
+            <button
+              type="button"
+              class="popup-ai-button"
+              data-mode="ward"
+              data-id="${wardId}"
+            >
+              Explain fire risk
+            </button>
+            <span class="popup-ai-meta" data-ai-meta></span>
+          </div>
+          <div class="popup-ai-text" data-ai-text>
+            Click “Explain fire risk” for an AI overview.
+          </div>
+        </div>
       </div>
     `);
+
+    if (!layer.__aiExplainWired) {
+      layer.__aiExplainWired = true;
+
+      layer.on('popupopen', async (event) => {
+        const popupEl = event.popup?.getElement?.();
+        if (!popupEl) return;
+
+        const btn = popupEl.querySelector('.popup-ai-button');
+        const metaEl = popupEl.querySelector('[data-ai-meta]');
+        const textEl = popupEl.querySelector('[data-ai-text]');
+        if (!btn || !textEl) return;
+
+        if (btn.dataset.wired === 'true') return;
+        btn.dataset.wired = 'true';
+
+        btn.addEventListener('click', async () => {
+          const mode = btn.dataset.mode;
+          const id = btn.dataset.id;
+          if (!mode || !id) return;
+
+          btn.disabled = true;
+          btn.textContent = 'Explaining…';
+          if (metaEl) metaEl.textContent = '';
+          textEl.textContent = 'Loading AI overview…';
+
+          try {
+            const response = await fetch(
+              `${BACKEND_URL}/api/explain?mode=${encodeURIComponent(mode)}&id=${encodeURIComponent(id)}`
+            );
+            if (!response.ok) throw new Error('Explain request failed');
+            const payload = await response.json();
+
+            const source = safeText(payload?.source || '');
+            const text = safeText(payload?.text || 'No explanation returned.');
+            if (metaEl) metaEl.textContent = source ? `Source: ${source}` : '';
+            textEl.textContent = text;
+          } catch {
+            textEl.textContent =
+              'Could not load the AI overview right now. Please try again.';
+          } finally {
+            btn.disabled = false;
+            btn.textContent = 'Explain fire risk';
+          }
+        });
+      });
+    }
 
     layer.on({
       mouseover: (event) => {
         const hoveredLayer = event.target;
-        hoveredLayer.setStyle({ weight: 3, color: '#333', fillOpacity: 0.9 });
+        hoveredLayer.setStyle({
+          weight: 2.6,
+          color: '#ffffff',
+          opacity: 1,
+          fillOpacity: 0.52
+        });
       },
       mouseout: (event) => {
         layer.options.style = styleRegion(feature);

@@ -120,7 +120,7 @@ const EventLayer = ({ timeFrame }) => {
             parsedEvents.length > 0 ? parsedEvents : FALLBACK_EVENTS.filter((e) => e.estimatedAttendance > MIN_ATTENDANCE)
           );
         }
-      } catch (error) {
+      } catch {
         if (!cancelled) {
           setEvents(FALLBACK_EVENTS.filter((e) => e.estimatedAttendance > MIN_ATTENDANCE));
         }
