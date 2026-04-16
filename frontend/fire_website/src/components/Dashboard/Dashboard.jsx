@@ -1,18 +1,20 @@
 // src/components/Dashboard/Dashboard.jsx
 import { useEffect, useState } from 'react';
 import './Dashboard.css';
-import RiskTrends from './RiskTrends';
 import TopRiskAreas from './TopRiskAreas';
-import ActionRecommendations from './ActionRecommendations';
 
-const Dashboard = () => {
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
+const Dashboard = ({ dataSource = 'mock' }) => {
   const [summary, setSummary] = useState(null);
 
   useEffect(() => {
-    const apiUrl = '[localhost](http://localhost:5000/api/fire-risk-summary)';
-    fetch(apiUrl)
+    fetch(`${BACKEND_URL}/api/health`)
       .then((res) => res.json())
-      .then((data) => setSummary(data))
+      .then((data) => setSummary({
+        totalRegions: data.wards_loaded ?? 0,
+        zonesLoaded: data.zones_loaded ?? 0,
+      }))
       .catch((err) => console.error('Error fetching dashboard data:', err));
   }, []);
 
@@ -23,29 +25,18 @@ const Dashboard = () => {
         <>
           <div className="dashboard-summary">
             <div className="summary-card">
-              <h3>Total Regions</h3>
+              <h3>Wards</h3>
               <p>{summary.totalRegions}</p>
             </div>
-            <div className="summary-card high">
-              <h3>High Risk Areas</h3>
-              <p>{summary.highRiskAreas}</p>
-            </div>
-            <div className="summary-card medium">
-              <h3>Medium Risk Areas</h3>
-              <p>{summary.mediumRiskAreas}</p>
-            </div>
-            <div className="summary-card low">
-              <h3>Low Risk Areas</h3>
-              <p>{summary.lowRiskAreas}</p>
+            <div className="summary-card">
+              <h3>DataZones</h3>
+              <p>{summary.zonesLoaded}</p>
             </div>
           </div>
 
           <div className="dashboard-charts">
-            <RiskTrends />
-            <TopRiskAreas />
+            <TopRiskAreas dataSource={dataSource} />
           </div>
-
-          <ActionRecommendations actions={summary.recommendedActions} />
         </>
       ) : (
         <p>Loading data...</p>

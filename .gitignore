@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.pycache
 
 # Virtual environments
 venv/
@@ -10,7 +11,7 @@ venv/
 env/
 .env/
 
-# Environment variables (never commit real keys)
+# Environment variables — never commit real keys
 .env
 backend/.env
 
@@ -24,16 +25,26 @@ backend/.env
 Team-7.zip
 
 # OS
-.DS_Store
+**/.DS_Store
 Thumbs.db
+desktop.ini
 
 # Distribution / build
 dist/
+dist-ssr/
 build/
 *.egg-info/
+
+# Node
 node_modules/
 frontend/fire_website/.vite/
+package-lock.json
 
 # IDEs
 .vscode/settings.json
 .idea/
+*.suo
+*.sw?
+
+# Data pipeline — large raw files not needed in repo
+data-pipeline/raw/*.geojson
