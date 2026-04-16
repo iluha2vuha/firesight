@@ -52,6 +52,17 @@ def load_premises():
         return json.load(file)
 
 
+def sanitize_json_records(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Replace NaN/Infinity values with None so FastAPI can serialize CSV rows safely."""
+    cleaned_records: List[Dict[str, Any]] = []
+    for row in records:
+        cleaned_records.append({
+            key: None if isinstance(value, float) and (math.isnan(value) or math.isinf(value)) else value
+            for key, value in row.items()
+        })
+    return cleaned_records
+
+
 def load_zones() -> List[Dict[str, Any]]:
     """Load DataZone-level risk and forecast data from the data-pipeline output CSV."""
     if not ZONES_CSV.exists():
@@ -75,11 +86,7 @@ def load_zones() -> List[Dict[str, Any]]:
             return []
 
     df["drivers"] = df["drivers"].apply(parse_drivers)
-
-    # Replace NaN with None so FastAPI serialises them as JSON null
-    df = df.where(pd.notna(df), None)
-
-    return df.to_dict(orient="records")
+    return sanitize_json_records(df.to_dict(orient="records"))
 
 
 wards_geojson = load_wards()
@@ -99,8 +106,8 @@ def load_ward_forecasts() -> Dict[str, Dict[str, Any]]:
     except ImportError:
         return {}
     df = pd.read_csv(WARD_FORECASTS_CSV)
-    df = df.where(pd.notna(df), None)
-    return {row["ward_id"]: row.to_dict() for _, row in df.iterrows()}
+    records = sanitize_json_records(df.to_dict(orient="records"))
+    return {row["ward_id"]: row for row in records}
 
 
 zones: List[Dict[str, Any]] = load_zones()

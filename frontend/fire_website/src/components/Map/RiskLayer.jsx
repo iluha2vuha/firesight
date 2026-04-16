@@ -162,19 +162,19 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
           <p><b>System Recommendation:</b><br/> Prioritise prevention review and targeted community safety activity for this ward.</p>
         </div>
 
-        <div class=”popup-ai”>
-          <div class=”popup-ai-row”>
+        <div class="popup-ai">
+          <div class="popup-ai-row">
             <button
-              type=”button”
-              class=”popup-ai-button”
-              data-mode=”ward”
-              data-id=”${wardId}”
+              type="button"
+              class="popup-ai-button"
+              data-mode="ward"
+              data-id="${wardId}"
             >
               AI Actionable Next Steps
             </button>
-            <span class=”popup-ai-meta” data-ai-meta></span>
+            <span class="popup-ai-meta" data-ai-meta></span>
           </div>
-          <div class=”popup-ai-text” data-ai-text>
+          <div class="popup-ai-text" data-ai-text>
             Click for AI-powered prevention and capacity planning recommendations.
           </div>
         </div>

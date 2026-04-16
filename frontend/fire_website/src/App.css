@@ -85,6 +85,10 @@ body, html {
 .app-main {
   flex-grow: 1;
   position: relative;
+  --right-overlay-top: 20px;
+  --right-overlay-gap: 16px;
+  --right-overlay-bottom: 20px;
+  --legend-reserved-height: 190px;
 }
 
 /* ── Timeframe control — light default ── */
@@ -192,11 +196,11 @@ body, html {
 /* ── Top Risk Areas panel (bottom-right overlay) ── */
 .top-risk-panel {
   position: absolute;
-  bottom: 20px;
   right: 20px;
+  top: calc(var(--right-overlay-top) + var(--legend-reserved-height) + var(--right-overlay-gap));
+  bottom: var(--right-overlay-bottom);
   z-index: 1100;
   width: 260px;
-  max-height: 70vh;
   overflow-y: auto;
   background: rgba(255, 255, 255, 0.93);
   border: 1px solid rgba(148, 163, 184, 0.26);
@@ -218,9 +222,17 @@ body, html {
 }
 
 @media (max-width: 720px) {
+  .app-main {
+    --right-overlay-top: 16px;
+    --right-overlay-gap: 12px;
+    --right-overlay-bottom: 12px;
+    --legend-reserved-height: 168px;
+  }
+
   .top-risk-panel {
     width: calc(100vw - 32px);
     right: 16px;
+    top: auto;
     bottom: 12px;
     max-height: 40vh;
   }

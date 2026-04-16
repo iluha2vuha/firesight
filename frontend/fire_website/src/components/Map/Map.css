@@ -189,7 +189,7 @@
 /* ── Map Legend — light default ── */
 .map-legend {
   position: absolute;
-  top: 20px;
+  top: var(--right-overlay-top, 20px);
   right: 20px;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid #e2e8f0;
@@ -198,6 +198,7 @@
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
   z-index: 1000;
   width: 258px;
+  min-height: var(--legend-reserved-height, 190px);
   backdrop-filter: blur(4px);
   transition: background 0.25s ease, border-color 0.25s ease;
 }
@@ -274,6 +275,14 @@
 
 .night-mode .color-box {
   border-color: rgba(226, 232, 240, 0.18);
+}
+
+@media (max-width: 720px) {
+  .map-legend {
+    right: 16px;
+    width: min(258px, calc(100vw - 32px));
+    min-height: var(--legend-reserved-height, 168px);
+  }
 }
 
 /* ── Map Controls — light default ── */
