@@ -13,14 +13,10 @@ const TIMEFRAME_TO_MONTHS = {
 
 const premisesIcon = L.divIcon({
   className: 'premises-marker-icon-root',
-  html: `
-    <div class="premises-marker-badge" aria-hidden="true">
-      <span class="premises-marker-glyph">⌂</span>
-    </div>
-  `,
-  iconSize: [34, 34],
-  iconAnchor: [17, 17],
-  popupAnchor: [0, -18]
+  html: `<div class="premises-marker-dot" aria-hidden="true"></div>`,
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+  popupAnchor: [0, -10]
 });
 
 const parsePressureMonths = (futurePressure) => {
@@ -175,7 +171,7 @@ const PremisesLayer = ({ timeFrame = 'Current', focus = 'city-centre', riskBandF
                     onClick={() => explainPremises(p.id)}
                     disabled={!!aiLoadingById[p.id]}
                   >
-                    {aiLoadingById[p.id] ? 'Explaining…' : 'Explain fire risk'}
+                    {aiLoadingById[p.id] ? 'Generating…' : 'AI Actionable Next Steps'}
                   </button>
                   <span className="popup-ai-meta">
                     {aiById[p.id]?.source ? `Source: ${aiById[p.id].source}` : ''}
@@ -187,7 +183,7 @@ const PremisesLayer = ({ timeFrame = 'Current', focus = 'city-centre', riskBandF
                     ? aiById[p.id].error
                     : aiById[p.id]?.text
                       ? aiById[p.id].text
-                      : 'Click “Explain fire risk” for an AI overview.'}
+                      : 'Click for AI-powered protection and capacity planning recommendations.'}
                 </div>
               </div>
             </div>

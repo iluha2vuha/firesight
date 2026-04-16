@@ -1,25 +1,148 @@
+/* TopRiskAreas — light default */
 .top-areas h3 {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   font-size: 13px;
   font-weight: 700;
   color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.top-areas-loading {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
 }
 
 .top-areas ul {
   list-style: none;
   margin: 0;
   padding: 0;
-}
-
-.top-areas li {
   display: flex;
-  justify-content: space-between;
-  padding: 5px 0;
-  font-size: 13px;
-  border-bottom: 1px solid #f1f5f9;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.top-areas .risk-score {
+.top-area-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 9px 10px;
+}
+
+.top-area-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.top-area-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.top-area-score {
+  font-size: 16px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.top-area-drivers {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.top-area-forecast {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #475569;
+}
+
+.top-area-trend {
+  font-size: 11px;
+}
+
+.top-area-trend.up   { color: #ef4444; }
+.top-area-trend.down { color: #22c55e; }
+
+.top-area-ai-btn {
+  margin-top: 7px;
+  appearance: none;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  background: rgba(248, 250, 252, 0.95);
+  color: #0f172a;
+  font-size: 10px;
   font-weight: 700;
-  color: #b91c1c;
+  padding: 4px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.12s ease;
+  white-space: nowrap;
+}
+
+.top-area-ai-btn:hover:not(:disabled) {
+  background: white;
+  transform: translateY(-1px);
+}
+
+.top-area-ai-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.top-area-ai-text {
+  margin-top: 7px;
+  font-size: 11px;
+  color: #334155;
+  line-height: 1.5;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 7px 8px;
+  white-space: pre-line;
+}
+
+/* ── Dark theme overrides ── */
+.night-mode .top-areas h3 {
+  color: rgba(248, 250, 252, 0.9);
+}
+
+.night-mode .top-areas-loading {
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.night-mode .top-area-item {
+  background: rgba(30, 41, 59, 0.55);
+  border-color: rgba(71, 85, 105, 0.45);
+}
+
+.night-mode .top-area-name {
+  color: rgba(226, 232, 240, 0.95);
+}
+
+.night-mode .top-area-drivers,
+.night-mode .top-area-forecast {
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.night-mode .top-area-ai-btn {
+  border-color: rgba(99, 102, 241, 0.55);
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5b4fc;
+}
+
+.night-mode .top-area-ai-btn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.22);
+  color: #c7d2fe;
+}
+
+.night-mode .top-area-ai-text {
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(71, 85, 105, 0.4);
 }
