@@ -117,11 +117,16 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
     const forecast6 = prediction.forecast_6mo;
     const trendPct = prediction.trend_pct;
     const isModel = p.data_source === 'model';
+    const modelComponents = p.model_components ?? null;
 
     const forecastHtml = forecast6 != null
       ? `<p class="popup-row"><b>6-month forecast:</b> ${forecast6} incidents</p>
          <p class="popup-row"><b>Trend:</b> ${trendPct != null ? trendPct + '%' : 'n/a'}</p>`
       : `<p class="popup-row popup-pending">⚠ Forecast unavailable — incident data pending</p>`;
+
+    const componentsBadge = isModel && modelComponents
+      ? `<span class="popup-components-badge">${modelComponents}/5 data sources</span>`
+      : '';
 
     const sourceBadge = `<span class="popup-source-badge popup-source-badge--${isModel ? 'model' : 'mock'}">${isModel ? 'Linear model' : 'Mock data'}</span>`;
 
@@ -130,6 +135,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
         <div class="popup-header">
           <h3>${p.ward_name ?? p.name ?? 'Unknown area'}</h3>
           ${sourceBadge}
+          ${componentsBadge}
         </div>
 
         <div class="popup-score">

@@ -21,7 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 WARDS_FILE = DATA_DIR / "glasgow_wards.geojson"
 PREMISES_FILE = DATA_DIR / "city_centre_premises.json"
-ZONES_CSV = BASE_DIR.parent / "data-pipeline" / "output" / "glasgowzones.csv"
+ZONES_CSV         = BASE_DIR.parent / "data-pipeline" / "output" / "glasgowzones.csv"
+WARD_FORECASTS_CSV = BASE_DIR.parent / "data-pipeline" / "output" / "glasgow_ward_forecasts.csv"
 
 if load_dotenv is not None:
     load_dotenv(BASE_DIR / ".env")
@@ -88,8 +89,22 @@ wards_by_id = {
 premises = load_premises()
 premises_by_id = {item["id"]: item for item in premises}
 
+def load_ward_forecasts() -> Dict[str, Dict[str, Any]]:
+    """Load real ward-level fire forecasts from data-pipeline output."""
+    if not WARD_FORECASTS_CSV.exists():
+        return {}
+    try:
+        import pandas as pd
+    except ImportError:
+        return {}
+    df = pd.read_csv(WARD_FORECASTS_CSV)
+    df = df.where(pd.notna(df), None)
+    return {row["ward_id"]: row.to_dict() for _, row in df.iterrows()}
+
+
 zones: List[Dict[str, Any]] = load_zones()
 zones_by_id: Dict[str, Dict[str, Any]] = {z["zoneid"]: z for z in zones}
+ward_forecasts: Dict[str, Dict[str, Any]] = load_ward_forecasts()
 
 
 def build_decile_lookup(zone_list: List[Dict[str, Any]]) -> Dict[int, int]:
@@ -210,15 +225,25 @@ def ward_with_prediction(feature, use_model: bool = False):
             if decile is not None
             else props["risk_score"]
         )
-        model_prediction = {
-            "forecast_6mo": None,
-            "forecast_12mo": None,
-            "forecast_18mo": None,
-            "forecast_lower": None,
-            "forecast_upper": None,
-            "trend_pct": None,
-            "note": "Forecast unavailable — incident data pending",
-        }
+        # Use real ward forecast if available, otherwise mark as pending
+        wf = ward_forecasts.get(props["ward_id"], {})
+        if wf and wf.get("forecast_6mo") is not None:
+            model_prediction = {
+                "forecast_6mo":   int(wf["forecast_6mo"]),
+                "forecast_12mo":  int(wf["forecast_12mo"]) if wf.get("forecast_12mo") is not None else None,
+                "forecast_18mo":  int(wf["forecast_18mo"]) if wf.get("forecast_18mo") is not None else None,
+                "forecast_lower": int(wf["forecast_lower"]) if wf.get("forecast_lower") is not None else None,
+                "forecast_upper": int(wf["forecast_upper"]) if wf.get("forecast_upper") is not None else None,
+                "trend_pct":      wf.get("trend_pct"),
+                "data_quality":   wf.get("data_quality", "sufficient"),
+                "note":           "Based on 14 years of SFRS dwelling fire data (2009–2023).",
+            }
+        else:
+            model_prediction = {
+                "forecast_6mo": None, "forecast_12mo": None, "forecast_18mo": None,
+                "forecast_lower": None, "forecast_upper": None, "trend_pct": None,
+                "note": "Forecast unavailable — incident data pending",
+            }
         return {
             **feature,
             "properties": {
@@ -230,6 +255,7 @@ def ward_with_prediction(feature, use_model: bool = False):
                 "risk_band": risk_band(model_score),
                 "prediction": model_prediction,
                 "data_source": "model",
+                "model_components": 5,
             },
         }
 
@@ -417,11 +443,15 @@ def health():
 
 @app.get("/api/status")
 def api_status():
-    forecast_available = any(z.get("forecast6mo") is not None for z in zones)
+    forecast_available = len(ward_forecasts) > 0
+    n_components = max((z.get("n_score_components") or 0 for z in zones), default=0)
     return {
         "model_loaded": len(zones) > 0,
         "zones_count": len(zones),
         "forecast_available": forecast_available,
+        "ward_forecasts_count": len(ward_forecasts),
+        "model_components_active": n_components,
+        "model_components_total": 5,
     }
 
 
