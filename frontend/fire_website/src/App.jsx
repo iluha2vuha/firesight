@@ -9,6 +9,13 @@ function App() {
   const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[0]);
   const [dataSource, setDataSource] = useState('mock');
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [nightMode, setNightMode] = useState(() => {
+    try {
+      return window.localStorage.getItem('fireSightNightMode') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/status`)
@@ -52,6 +59,23 @@ function App() {
         </div>
 
         <div className="app-header-controls">
+          <label className="header-toggle" title="Switch map to dark style">
+            <input
+              type="checkbox"
+              checked={nightMode}
+              onChange={(e) => {
+                const next = e.target.checked;
+                setNightMode(next);
+                try {
+                  window.localStorage.setItem('fireSightNightMode', String(next));
+                } catch {
+                  // ignore
+                }
+              }}
+            />
+            <span>Night mode</span>
+          </label>
+
           <div className="data-source-toggle">
             <span className="data-source-label">Data source</span>
             <div className="data-source-buttons">
@@ -93,7 +117,7 @@ function App() {
           </select>
         </div>
 
-        <RiskMap timeFrame={timeFrame} dataSource={dataSource} />
+        <RiskMap timeFrame={timeFrame} dataSource={dataSource} nightMode={nightMode} />
       </main>
     </div>
   );

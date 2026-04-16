@@ -147,6 +147,24 @@ body, html {
   gap: 12px;
 }
 
+.header-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.9);
+  user-select: none;
+  cursor: pointer;
+}
+
+.header-toggle input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  accent-color: rgba(255, 255, 255, 0.95);
+}
+
 .data-source-toggle {
   display: flex;
   align-items: center;

@@ -17,6 +17,16 @@
   filter: contrast(0.98);
 }
 
+/* Night mode basemap tuning (used with Carto dark tiles) */
+.risk-map-container.night-mode .leaflet-tile {
+  filter: saturate(0.95) contrast(1.05) brightness(0.92);
+  opacity: 1;
+}
+
+.risk-map-container.night-mode .leaflet-tile-pane {
+  filter: none;
+}
+
 /* Custom Popup Styling */
 .custom-popup {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -96,6 +106,34 @@
   backdrop-filter: blur(4px);
 }
 
+.night-mode .map-legend {
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.38);
+}
+
+.night-mode .map-legend h4 {
+  color: rgba(248, 250, 252, 0.95);
+}
+
+.night-mode .legend-subtitle {
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.night-mode .legend-item {
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.night-mode .legend-item:hover,
+.night-mode .legend-item.active {
+  background: rgba(30, 41, 59, 0.55);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
+.night-mode .color-box {
+  border: 1px solid rgba(226, 232, 240, 0.18);
+}
+
 .map-legend h4 {
   margin: 0 0 0.35rem 0;
   font-size: 13px;
@@ -165,6 +203,20 @@
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
   padding: 10px 12px;
   backdrop-filter: blur(4px);
+}
+
+.night-mode .map-controls {
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.38);
+}
+
+.night-mode .map-toggle {
+  color: rgba(226, 232, 240, 0.92);
+}
+
+.night-mode .map-toggle input[type='checkbox'] {
+  accent-color: rgba(248, 250, 252, 0.92);
 }
 
 .map-controls-stack {
@@ -259,6 +311,76 @@
   margin-top: 10px;
   border-top: 1px solid #e5e7eb;
   padding-top: 10px;
+}
+
+.night-mode .custom-popup,
+.night-mode .event-popup {
+  color: rgba(248, 250, 252, 0.92);
+}
+
+.night-mode .custom-popup h3,
+.night-mode .event-popup h3 {
+  color: rgba(248, 250, 252, 0.96);
+}
+
+.night-mode .popup-header {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.night-mode .popup-score-label,
+.night-mode .popup-timeframe,
+.night-mode .event-popup-grid span {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.night-mode .popup-card,
+.night-mode .event-popup-grid p,
+.night-mode .popup-ai-text {
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.night-mode .popup-card.action {
+  border-left-color: rgba(245, 158, 11, 0.85);
+}
+
+.night-mode .popup-ai {
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.night-mode .popup-ai-button {
+  background: rgba(30, 41, 59, 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  color: rgba(248, 250, 252, 0.94);
+}
+
+.night-mode .popup-ai-button:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.72);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+
+.night-mode .popup-ai-meta,
+.night-mode .event-popup-note {
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.night-mode .event-risk-tag {
+  background: rgba(248, 113, 113, 0.18);
+  color: rgba(254, 202, 202, 0.95);
+}
+
+/* Future build / premises markers: darker badge in night mode */
+.night-mode .premises-marker-badge,
+.night-mode .future-build-marker-badge,
+.night-mode .event-marker-badge {
+  background: rgba(15, 23, 42, 0.72) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+}
+
+.night-mode .premises-marker-glyph,
+.night-mode .future-build-marker-icon,
+.night-mode .event-marker-excl {
+  color: rgba(248, 250, 252, 0.92) !important;
 }
 
 .popup-ai-row {
