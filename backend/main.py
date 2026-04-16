@@ -284,6 +284,26 @@ def fallback_ward_explanation(feature):
     )
 
 
+def fallback_ward_explanation_model(feature):
+    props = feature["properties"]
+    decile = props.get("simd_decile")
+    model_score = (
+        decile_to_model_score.get(int(decile), props["risk_score"])
+        if decile is not None
+        else props["risk_score"]
+    )
+    band = risk_band(model_score)
+    drivers = props.get("drivers", [])
+    driver_text = ", ".join(drivers[:2]) if drivers else "high area deprivation"
+    return (
+        f"{props['ward_name']} has a model risk score of {model_score}/100 ({band} priority band), "
+        f"derived from SIMD 2020 area deprivation data (decile {decile}). "
+        f"The primary risk factor is {driver_text} — deprivation is currently the sole active "
+        f"component in the five-factor linear model (Census 2022 and SFRS incident data are pending). "
+        "Incident forecasts will activate automatically once historical fire data is loaded into the pipeline."
+    )
+
+
 def fallback_premises_explanation(item):
     drivers = item.get("drivers", [])
     driver_text = ", ".join(drivers[:3]) if drivers else "the available premises risk indicators"
@@ -297,11 +317,32 @@ def fallback_premises_explanation(item):
     )
 
 
-def build_explain_payload(mode, record):
+def build_explain_payload(mode, record, source: str = "mock"):
     if mode == "ward":
         props = record["properties"]
+        if source == "model":
+            decile = props.get("simd_decile")
+            model_score = (
+                decile_to_model_score.get(int(decile), props["risk_score"])
+                if decile is not None
+                else props["risk_score"]
+            )
+            return {
+                "mode": "ward",
+                "data_source": "linear_model",
+                "name": props["ward_name"],
+                "risk_score": model_score,
+                "risk_band": risk_band(model_score),
+                "simd_decile": decile,
+                "drivers": props.get("drivers", []),
+                "active_model_components": 1,
+                "total_model_components": 5,
+                "forecast_available": False,
+                "note": "Score derived from SIMD 2020 deprivation index. Census and incident data pending.",
+            }
         return {
             "mode": "ward",
+            "data_source": "mock",
             "name": props["ward_name"],
             "risk_score": props["risk_score"],
             "risk_band": risk_band(props["risk_score"]),
@@ -325,7 +366,7 @@ def build_explain_payload(mode, record):
     }
 
 
-def openai_explanation(mode, record):
+def openai_explanation(mode, record, source: str = "mock"):
     if not os.getenv("OPENAI_API_KEY"):
         return None
 
@@ -334,7 +375,7 @@ def openai_explanation(mode, record):
     except ImportError:
         return None
 
-    payload = build_explain_payload(mode, record)
+    payload = build_explain_payload(mode, record, source=source)
     system_prompt = (
         "You are a fire prevention analyst supporting a UK Fire and Rescue Service. "
         "Explain risk in plain English for non-technical planners. Use only the data provided. "
@@ -457,12 +498,17 @@ def get_premises(premises_id: str):
 def explain(
     mode: str,
     record_id: str = Query(..., alias="id"),
+    source: str = "mock",
 ):
     if mode == "ward":
         record = wards_by_id.get(record_id)
         if record is None:
             raise HTTPException(status_code=404, detail="Ward not found")
-        fallback = fallback_ward_explanation(record)
+        fallback = (
+            fallback_ward_explanation_model(record)
+            if source == "model"
+            else fallback_ward_explanation(record)
+        )
     elif mode == "premises":
         record = premises_by_id.get(record_id)
         if record is None:
@@ -471,10 +517,11 @@ def explain(
     else:
         raise HTTPException(status_code=400, detail="Mode must be 'ward' or 'premises'")
 
-    live_text = openai_explanation(mode, record)
+    live_text = openai_explanation(mode, record, source=source)
     return {
         "id": record_id,
         "mode": mode,
+        "data_source": source,
         "source": "live" if live_text else "fallback",
         "text": live_text or fallback,
     }
