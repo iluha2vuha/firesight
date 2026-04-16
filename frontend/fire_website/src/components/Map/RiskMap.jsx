@@ -8,14 +8,14 @@ import RiskLayer from './RiskLayer';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 
-const RiskMap = ({ timeFrame, dataSource = 'mock' }) => {
+const RiskMap = ({ timeFrame, dataSource = 'mock', nightMode = false }) => {
   const [hoveredRiskBand, setHoveredRiskBand] = useState(null);
   const [showPremises, setShowPremises] = useState(false);
   const [showFutureBuildings, setShowFutureBuildings] = useState(true);
   const glasgowCenter = [55.8642, -4.2518];
 
   return (
-    <div className="risk-map-container">
+    <div className={`risk-map-container ${nightMode ? 'night-mode' : ''}`}>
       <MapLegend
         hoveredRiskBand={hoveredRiskBand}
         onRiskBandHover={setHoveredRiskBand}
@@ -51,7 +51,11 @@ const RiskMap = ({ timeFrame, dataSource = 'mock' }) => {
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          url={
+            nightMode
+              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+              : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+          }
         />
 
         <RiskLayer timeFrame={timeFrame} hoveredRiskBand={hoveredRiskBand} dataSource={dataSource} />
