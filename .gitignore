@@ -31,6 +31,8 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+node_modules/
+frontend/fire_website/.vite/
 
 # IDEs
 .vscode/settings.json
