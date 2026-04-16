@@ -28,6 +28,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
 
   useEffect(() => {
     let cancelled = false;
+    setGeoData(null); // clear immediately so the old layer unmounts before new data arrives
 
     const fetchWards = async () => {
       try {
