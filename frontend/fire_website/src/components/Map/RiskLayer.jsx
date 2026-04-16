@@ -22,7 +22,7 @@ const getRiskBand = (riskFactor) => {
   return 'low';
 };
 
-const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null }) => {
+const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource = 'mock' }) => {
   const [geoData, setGeoData] = useState(null);
   const [error, setError] = useState(null);
 
@@ -31,7 +31,9 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null }) => {
 
     const fetchWards = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/strategic/wards.geojson`);
+        const response = await fetch(
+          `${BACKEND_URL}/api/strategic/wards.geojson?source=${dataSource}`
+        );
         if (!response.ok) {
           throw new Error('Failed to fetch ward data');
         }
@@ -54,7 +56,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null }) => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [dataSource]);
 
   const mapDataForTimeframe = useMemo(() => {
     if (!geoData) return null;
@@ -105,13 +107,22 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null }) => {
     const drivers = Array.isArray(p.drivers) ? p.drivers : [];
     const prediction = p.prediction ?? {};
     const baseRisk = p.risk_score ?? timeframeRisk;
-    const forecast6 = prediction.forecast_6mo ?? 'n/a';
-    const trendPct = prediction.trend_pct ?? 'n/a';
+    const forecast6 = prediction.forecast_6mo;
+    const trendPct = prediction.trend_pct;
+    const isModel = p.data_source === 'model';
+
+    const forecastHtml = forecast6 != null
+      ? `<p class="popup-row"><b>6-month forecast:</b> ${forecast6} incidents</p>
+         <p class="popup-row"><b>Trend:</b> ${trendPct != null ? trendPct + '%' : 'n/a'}</p>`
+      : `<p class="popup-row popup-pending">⚠ Forecast unavailable — incident data pending</p>`;
+
+    const sourceBadge = `<span class="popup-source-badge popup-source-badge--${isModel ? 'model' : 'mock'}">${isModel ? 'Linear model' : 'Mock data'}</span>`;
 
     layer.bindPopup(`
       <div class="custom-popup" style="min-width: 220px;">
         <div class="popup-header">
           <h3>${p.ward_name ?? p.name ?? 'Unknown area'}</h3>
+          ${sourceBadge}
         </div>
 
         <div class="popup-score">
@@ -123,8 +134,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null }) => {
         <p class="popup-timeframe"><b>Time frame:</b> ${timeFrame}</p>
         <p class="popup-row"><b>Ward ID:</b> ${p.ward_id ?? 'n/a'}</p>
         <p class="popup-row"><b>Current Score:</b> ${baseRisk}/100</p>
-        <p class="popup-row"><b>6-month forecast:</b> ${forecast6} incidents</p>
-        <p class="popup-row"><b>Trend:</b> ${trendPct}%</p>
+        ${forecastHtml}
 
         <div class="popup-card">
           <p><b>Primary Drivers:</b><br/> ${drivers.join(', ') || 'Risk drivers unavailable.'}</p>
@@ -170,7 +180,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null }) => {
 
       {mapDataForTimeframe && (
         <GeoJSON
-          key={timeFrame}
+          key={`${timeFrame}-${dataSource}`}
           data={mapDataForTimeframe}
           style={styleRegion}
           onEachFeature={onEachFeature}

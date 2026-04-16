@@ -1,11 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import RiskMap from './components/Map/RiskMap';
 
 const TIME_FRAME_OPTIONS = ['Current', 'In 6 months', 'In 1 year', 'In 1.5 years'];
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
 function App() {
   const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[0]);
+  const [dataSource, setDataSource] = useState('mock');
+  const [modelLoaded, setModelLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/status`)
+      .then((r) => r.json())
+      .then((data) => setModelLoaded(data.model_loaded === true))
+      .catch(() => setModelLoaded(false));
+  }, []);
 
   return (
     <div className="app-container">
@@ -40,7 +50,31 @@ function App() {
             <p>Operational risk view for Glasgow regions</p>
           </div>
         </div>
-        <span className="app-header-badge">Live forecast</span>
+
+        <div className="app-header-controls">
+          <div className="data-source-toggle">
+            <span className="data-source-label">Data source</span>
+            <div className="data-source-buttons">
+              <button
+                className={`ds-btn ${dataSource === 'mock' ? 'ds-btn--active' : ''}`}
+                onClick={() => setDataSource('mock')}
+              >
+                Mock
+              </button>
+              <button
+                className={`ds-btn ${dataSource === 'model' ? 'ds-btn--active' : ''}`}
+                onClick={() => setDataSource('model')}
+                disabled={!modelLoaded}
+                title={!modelLoaded ? 'Run the data pipeline first' : 'Switch to linear model output'}
+              >
+                Model
+              </button>
+            </div>
+          </div>
+          <span className="app-header-badge">
+            {dataSource === 'model' ? 'Linear model' : 'Mock data'}
+          </span>
+        </div>
       </header>
 
       <main className="app-main">
@@ -59,7 +93,7 @@ function App() {
           </select>
         </div>
 
-        <RiskMap timeFrame={timeFrame} />
+        <RiskMap timeFrame={timeFrame} dataSource={dataSource} />
       </main>
     </div>
   );

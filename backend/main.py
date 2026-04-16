@@ -2,6 +2,7 @@ import ast
 import json
 import math
 import os
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -89,6 +90,20 @@ premises_by_id = {item["id"]: item for item in premises}
 
 zones: List[Dict[str, Any]] = load_zones()
 zones_by_id: Dict[str, Dict[str, Any]] = {z["zoneid"]: z for z in zones}
+
+
+def build_decile_lookup(zone_list: List[Dict[str, Any]]) -> Dict[int, int]:
+    """Map each SIMD decile (1-10) to the mean model risk score for zones in that decile."""
+    groups: Dict[int, List[int]] = defaultdict(list)
+    for z in zone_list:
+        d = z.get("simddecile")
+        r = z.get("riskscore")
+        if d is not None and r is not None:
+            groups[int(d)].append(int(r))
+    return {d: round(sum(v) / len(v)) for d, v in groups.items()}
+
+
+decile_to_model_score: Dict[int, int] = build_decile_lookup(zones)
 
 app.mount("/data", StaticFiles(directory=DATA_DIR), name="data")
 
@@ -185,16 +200,49 @@ def ward_summary(feature):
     }
 
 
-def ward_with_prediction(feature):
+def ward_with_prediction(feature, use_model: bool = False):
+    props = feature["properties"]
+
+    if use_model and decile_to_model_score:
+        decile = props.get("simd_decile")
+        model_score = (
+            decile_to_model_score.get(int(decile), props["risk_score"])
+            if decile is not None
+            else props["risk_score"]
+        )
+        model_prediction = {
+            "forecast_6mo": None,
+            "forecast_12mo": None,
+            "forecast_18mo": None,
+            "forecast_lower": None,
+            "forecast_upper": None,
+            "trend_pct": None,
+            "note": "Forecast unavailable — incident data pending",
+        }
+        return {
+            **feature,
+            "properties": {
+                **props,
+                "id": props["ward_id"],
+                "name": props["ward_name"],
+                "mode": "ward",
+                "risk_score": model_score,
+                "risk_band": risk_band(model_score),
+                "prediction": model_prediction,
+                "data_source": "model",
+            },
+        }
+
     return {
         **feature,
         "properties": {
-            **feature["properties"],
-            "id": feature["properties"]["ward_id"],
-            "name": feature["properties"]["ward_name"],
+            **props,
+            "id": props["ward_id"],
+            "name": props["ward_name"],
             "mode": "ward",
-            "risk_band": risk_band(feature["properties"]["risk_score"]),
+            "risk_band": risk_band(props["risk_score"]),
             "prediction": prediction_for(feature),
+            "data_source": "mock",
         },
     }
 
@@ -326,6 +374,16 @@ def health():
     }
 
 
+@app.get("/api/status")
+def api_status():
+    forecast_available = any(z.get("forecast6mo") is not None for z in zones)
+    return {
+        "model_loaded": len(zones) > 0,
+        "zones_count": len(zones),
+        "forecast_available": forecast_available,
+    }
+
+
 @app.get("/api/modes")
 def modes():
     return {
@@ -353,23 +411,24 @@ def list_strategic_wards():
 
 
 @app.get("/api/strategic/wards.geojson")
-def get_strategic_wards_geojson():
+def get_strategic_wards_geojson(source: str = "mock"):
+    use_model = source == "model" and bool(decile_to_model_score)
     return {
         **wards_geojson,
         "features": [
-            ward_with_prediction(feature)
+            ward_with_prediction(feature, use_model=use_model)
             for feature in wards_geojson.get("features", [])
         ],
     }
 
 
 @app.get("/api/strategic/wards/{ward_id}")
-def get_strategic_ward(ward_id: str):
+def get_strategic_ward(ward_id: str, source: str = "mock"):
     ward = wards_by_id.get(ward_id)
     if ward is None:
         raise HTTPException(status_code=404, detail="Ward not found")
-
-    return ward_with_prediction(ward)
+    use_model = source == "model" and bool(decile_to_model_score)
+    return ward_with_prediction(ward, use_model=use_model)
 
 
 @app.get("/api/premises")
@@ -427,13 +486,13 @@ def list_wards():
 
 
 @app.get("/api/wards.geojson")
-def get_wards_geojson():
-    return get_strategic_wards_geojson()
+def get_wards_geojson(source: str = "mock"):
+    return get_strategic_wards_geojson(source=source)
 
 
 @app.get("/api/wards/{ward_id}")
-def get_ward(ward_id: str):
-    return get_strategic_ward(ward_id)
+def get_ward(ward_id: str, source: str = "mock"):
+    return get_strategic_ward(ward_id, source=source)
 
 
 @app.get("/api/wards/{ward_id}/prediction")

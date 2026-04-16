@@ -1,0 +1,14 @@
+# Backend
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+openai==1.54.0
+python-dotenv==1.0.1
+
+# Data pipeline
+pandas>=2.2.3
+numpy>=2.0.0
+jupyter
+ipykernel
+nbconvert
+matplotlib
+geopandas

@@ -140,6 +140,62 @@ body, html {
   transform: translateY(-1px);
 }
 
+/* Data source toggle */
+.app-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.data-source-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.data-source-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-source-buttons {
+  display: flex;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 3px;
+  gap: 2px;
+}
+
+.ds-btn {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.ds-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.ds-btn--active {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #7f1d1d !important;
+}
+
+.ds-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 @media (max-width: 720px) {
   .app-header {
     padding: 12px 14px;

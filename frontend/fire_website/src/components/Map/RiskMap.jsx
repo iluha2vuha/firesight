@@ -6,7 +6,7 @@ import RiskLayer from './RiskLayer';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 
-const RiskMap = ({ timeFrame }) => {
+const RiskMap = ({ timeFrame, dataSource = 'mock' }) => {
   const [hoveredRiskBand, setHoveredRiskBand] = useState(null);
   const glasgowCenter = [55.8642, -4.2518];
 
@@ -28,7 +28,7 @@ const RiskMap = ({ timeFrame }) => {
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
 
-        <RiskLayer timeFrame={timeFrame} hoveredRiskBand={hoveredRiskBand} />
+        <RiskLayer timeFrame={timeFrame} hoveredRiskBand={hoveredRiskBand} dataSource={dataSource} />
         <EventLayer timeFrame={timeFrame} />
       </MapContainer>
     </div>
