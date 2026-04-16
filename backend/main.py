@@ -1,8 +1,9 @@
+import ast
 import json
 import math
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 WARDS_FILE = DATA_DIR / "glasgow_wards.geojson"
 PREMISES_FILE = DATA_DIR / "city_centre_premises.json"
+ZONES_CSV = BASE_DIR.parent / "data-pipeline" / "output" / "glasgowzones.csv"
 
 if load_dotenv is not None:
     load_dotenv(BASE_DIR / ".env")
@@ -47,6 +49,36 @@ def load_premises():
         return json.load(file)
 
 
+def load_zones() -> List[Dict[str, Any]]:
+    """Load DataZone-level risk and forecast data from the data-pipeline output CSV."""
+    if not ZONES_CSV.exists():
+        return []
+
+    try:
+        import pandas as pd
+    except ImportError:
+        return []
+
+    df = pd.read_csv(ZONES_CSV)
+
+    # Parse the drivers column (stored as a Python list string by the notebook)
+    def parse_drivers(val):
+        if pd.isna(val):
+            return []
+        try:
+            result = ast.literal_eval(str(val))
+            return result if isinstance(result, list) else []
+        except Exception:
+            return []
+
+    df["drivers"] = df["drivers"].apply(parse_drivers)
+
+    # Replace NaN with None so FastAPI serialises them as JSON null
+    df = df.where(pd.notna(df), None)
+
+    return df.to_dict(orient="records")
+
+
 wards_geojson = load_wards()
 wards_by_id = {
     feature["properties"]["ward_id"]: feature
@@ -54,6 +86,9 @@ wards_by_id = {
 }
 premises = load_premises()
 premises_by_id = {item["id"]: item for item in premises}
+
+zones: List[Dict[str, Any]] = load_zones()
+zones_by_id: Dict[str, Dict[str, Any]] = {z["zoneid"]: z for z in zones}
 
 app.mount("/data", StaticFiles(directory=DATA_DIR), name="data")
 
@@ -286,6 +321,7 @@ def health():
         "status": "ok",
         "wards_loaded": len(wards_by_id),
         "premises_loaded": len(premises),
+        "zones_loaded": len(zones),
         "prediction_model": "linear_trend_forecast",
     }
 
@@ -411,3 +447,41 @@ def get_ward_prediction(ward_id: str):
         "ward_name": ward["properties"]["ward_name"],
         "prediction": prediction_for(ward),
     }
+
+
+# ---------------------------------------------------------------------------
+# DataZone endpoints — powered by data-pipeline/output/glasgowzones.csv
+# The notebook produces this file; the API serves precomputed results only.
+# ---------------------------------------------------------------------------
+
+@app.get("/api/zones")
+def list_zones(top: Optional[int] = None):
+    """
+    Return all 746 Glasgow DataZones with risk scores, drivers, and forecasts.
+    Optional ?top=N filters to the N highest-risk zones (by riskrank).
+    """
+    if not zones:
+        raise HTTPException(status_code=503, detail="Zone data not loaded — run the data pipeline first")
+
+    result = sorted(zones, key=lambda z: z.get("riskrank") or 9999)
+    if top is not None:
+        result = result[:top]
+    return result
+
+
+@app.get("/api/zones/top")
+def top_zones(n: int = 20):
+    """Return the N highest-risk DataZones (default 20)."""
+    if not zones:
+        raise HTTPException(status_code=503, detail="Zone data not loaded — run the data pipeline first")
+
+    return sorted(zones, key=lambda z: z.get("riskrank") or 9999)[:n]
+
+
+@app.get("/api/zones/{zoneid}")
+def get_zone(zoneid: str):
+    """Return a single DataZone by its S01xxxxxx identifier."""
+    zone = zones_by_id.get(zoneid)
+    if zone is None:
+        raise HTTPException(status_code=404, detail="Zone not found")
+    return zone
