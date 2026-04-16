@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer } from 'react-leaflet';
 import RiskLayer from './RiskLayer';
 import MapLegend from './MapLegend';
+import EventLayer from './EventLayer';
 import { useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
@@ -33,6 +34,7 @@ const RiskMap = ({ timeFrame }) => {
         
         {/* Render our polygons on top of the tile layer */}
         <RiskLayer timeFrame={timeFrame} hoveredRiskBand={hoveredRiskBand} />
+        <EventLayer timeFrame={timeFrame} />
 
       </MapContainer>
     </div>

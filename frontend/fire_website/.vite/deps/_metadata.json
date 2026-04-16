@@ -2,8 +2,14 @@
   "hash": "df522965",
   "configHash": "aebbfd2e",
   "lockfileHash": "b2ccd4c7",
-  "browserHash": "9c51c954",
+  "browserHash": "23fd5974",
   "optimized": {
+    "leaflet": {
+      "src": "../../node_modules/leaflet/dist/leaflet-src.js",
+      "file": "leaflet.js",
+      "fileHash": "520cafd0",
+      "needsInterop": true
+    },
     "react-dom/client": {
       "src": "../../node_modules/react-dom/client.js",
       "file": "react-dom_client.js",
@@ -13,7 +19,7 @@
     "react-leaflet": {
       "src": "../../node_modules/react-leaflet/lib/index.js",
       "file": "react-leaflet.js",
-      "fileHash": "73dbe106",
+      "fileHash": "b1d5ed9d",
       "needsInterop": false
     },
     "react": {

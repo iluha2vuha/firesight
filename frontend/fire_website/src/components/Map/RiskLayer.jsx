@@ -196,7 +196,6 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null }) => {
         mouseover: (e) => {
           const l = e.target;
           l.setStyle({ weight: 3, color: '#333', fillOpacity: 0.9 });
-          l.bringToFront();
         },
         mouseout: (e) => {
           // Reset style using the GeoJSON layer reference
