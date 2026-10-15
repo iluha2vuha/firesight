@@ -1,0 +1,32 @@
+import json
+import unittest
+
+import main
+
+
+class ModelDataContractTests(unittest.TestCase):
+    def test_forecasts_cover_exactly_the_map_wards(self):
+        self.assertEqual(len(main.wards_by_id), 23)
+        self.assertEqual(set(main.ward_forecasts), set(main.wards_by_id))
+
+    def test_north_east_uses_its_real_forecast(self):
+        ward = main.get_strategic_ward('S13003133', source='model')['properties']
+        self.assertEqual(ward['data_source'], 'model')
+        self.assertEqual(ward['prediction']['forecast_6mo'], 24)
+        self.assertEqual(ward['prediction']['forecast_12mo'], 23)
+        self.assertEqual(ward['prediction']['forecast_18mo'], 22)
+
+    def test_data_zones_have_unique_labels_and_preserve_intermediate_areas(self):
+        self.assertEqual(len(main.zones), 746)
+        self.assertEqual(len({z['zonename'] for z in main.zones}), 746)
+        shared_area = [z for z in main.zones if z['intermediatezoneid'] == 'S02001949']
+        self.assertGreater(len(shared_area), 1)
+        self.assertEqual(len({z['zonename'] for z in shared_area}), len(shared_area))
+
+    def test_model_responses_are_json_serializable(self):
+        json.dumps(main.get_strategic_wards_geojson(source='model'), allow_nan=False)
+        json.dumps(main.top_zones(5), allow_nan=False)
+
+
+if __name__ == '__main__':
+    unittest.main()

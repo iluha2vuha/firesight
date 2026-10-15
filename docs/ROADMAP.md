@@ -12,6 +12,7 @@ An unchecked item is planned work, not a completed capability.
 ## Next: make results understandable and checkable
 
 - [ ] **Document data provenance.** Record sources, dates, preparation steps, and which values are mock or derived. Verify the complete generation process from its required inputs.
+- [ ] **Correct forecast horizon units.** The fire source contains annual counts, but the runner currently labels its next three annual projections as 6/12/18 months. Define and validate the conversion before treating these as incident totals over monthly horizons.
 - [ ] **Evaluate forecasting.** Define an appropriate time-based evaluation, compare with a simple baseline, and report limitations. Claim accuracy only after measuring it.
 - [ ] **Add focused automated checks.** Cover meaningful API behaviour, missing data, JSON serialization, and key frontend flows; add CI for appropriate checks.
 - [ ] **Review usability.** Verify legends, controls, keyboard access, and layouts at common screen sizes.

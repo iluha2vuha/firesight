@@ -18,20 +18,25 @@ Data sources used
   raw/fire_statistics_scotland.csv — Dwelling fire counts per ward 2009-2023 (REQUIRED)
 """
 
-import ast
-import math
+import json
 import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-RAW    = Path("raw")
-OUTPUT = Path("output")
+BASE_DIR = Path(__file__).resolve().parent
+RAW    = BASE_DIR / "raw"
+OUTPUT = BASE_DIR / "output"
 OUTPUT.mkdir(exist_ok=True)
 
 GLASGOW_CA   = "S12000049"
-GLASGOW_WARD_PREFIX = "S130029"   # Glasgow City ward feature codes
+# Ward IDs are not a contiguous prefix (North East is S13003133).
+WARDS_FILE = BASE_DIR.parent / "backend" / "data" / "glasgow_wards.geojson"
+with WARDS_FILE.open() as file:
+    GLASGOW_WARD_IDS = {
+        feature["properties"]["ward_id"] for feature in json.load(file)["features"]
+    }
 
 # ---------------------------------------------------------------------------
 # Risk score weights — 5 real components, all from official SIMD data
@@ -59,7 +64,9 @@ print("Loading SIMD 2020 ...")
 simd_raw = pd.read_csv(RAW / "simd2020.csv")
 simd_gla = simd_raw[simd_raw["CA"] == GLASGOW_CA].copy()
 simd_clean = simd_gla[["DataZone", "IntZone", "SIMD2020V2CountryDecile"]].copy()
-simd_clean.columns = ["zoneid", "zonename", "simddecile"]
+simd_clean.columns = ["zoneid", "intermediatezoneid", "simddecile"]
+# IntZone identifies a larger area shared by several DataZones, not a zone name.
+simd_clean["zonename"] = simd_clean["zoneid"]
 GLASGOW_ZONES = set(simd_clean["zoneid"])
 print(f"  Glasgow DataZones: {len(GLASGOW_ZONES)}")
 
@@ -178,7 +185,7 @@ print("\nBuilding ward-level fire forecasts ...")
 
 fire_raw = pd.read_csv(RAW / "fire_statistics_scotland.csv")
 gla_fires = fire_raw[
-    (fire_raw["FeatureCode"].str.startswith(GLASGOW_WARD_PREFIX)) &
+    (fire_raw["FeatureCode"].isin(GLASGOW_WARD_IDS)) &
     (fire_raw["Type of Fire"] == "Dwelling Fire") &
     (fire_raw["Accident Status"] == "All")
 ].copy()
@@ -189,6 +196,9 @@ pivot = (
     .pivot_table(index="FeatureCode", columns="DateCode",
                  values="Value", fill_value=0)
 )
+missing_wards = GLASGOW_WARD_IDS - set(pivot.index)
+if missing_wards:
+    raise ValueError(f"Missing Glasgow ward fire data: {sorted(missing_wards)}")
 pivot = pivot.reindex(sorted(pivot.columns), axis=1)
 ward_names = gla_fires.drop_duplicates("FeatureCode").set_index("FeatureCode")["FeatureName"]
 print(f"  Glasgow wards with fire data: {len(pivot)}")
@@ -265,7 +275,7 @@ SCHEMA_COLS = [
 ]
 
 zones = features[[
-    "zoneid", "zonename", "simddecile", "riskscore", "drivers",
+    "zoneid", "zonename", "intermediatezoneid", "simddecile", "riskscore", "drivers",
     "population", "overcrowded_rate", "nocentralheat_rate",
     "cif_rate", "crime_rate_norm", "n_score_components",
 ]].copy()

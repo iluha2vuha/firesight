@@ -107,7 +107,7 @@ def load_ward_forecasts() -> Dict[str, Dict[str, Any]]:
         return {}
     df = pd.read_csv(WARD_FORECASTS_CSV)
     records = sanitize_json_records(df.to_dict(orient="records"))
-    return {row["ward_id"]: row for row in records}
+    return {row["ward_id"]: row for row in records if row["ward_id"] in wards_by_id}
 
 
 zones: List[Dict[str, Any]] = load_zones()
