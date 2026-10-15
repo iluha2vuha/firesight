@@ -11,10 +11,10 @@ const EXAMPLE_EVENTS = [
 const icon = L.divIcon({ className:'example-event-marker', html:'<span></span>', iconSize:[16,16], iconAnchor:[8,8] });
 const formatDate = (value) => new Intl.DateTimeFormat('en-GB', { day:'numeric', month:'short', year:'numeric', timeZone:'UTC' }).format(new Date(`${value}T12:00:00Z`));
 
-export default function EventLayer() {
+export default function EventLayer({ dockHeight }) {
   return <Pane name="eventMarkersPane" style={{zIndex:530}}>
     {EXAMPLE_EVENTS.map((event) => <Marker key={event.id} position={[event.lat,event.lng]} icon={icon} title={`Event example: ${event.name}`}>
-      <Popup maxHeight={190} autoPanPaddingTopLeft={[16,190]} autoPanPaddingBottomRight={[16,80]}>
+      <Popup maxHeight={190} autoPanPaddingTopLeft={[16,dockHeight + 44]} autoPanPaddingBottomRight={[16,80]}>
         <div className="premises-popup">
           <span className="source-tag">Sample event</span>
           <h3>{event.name}</h3>

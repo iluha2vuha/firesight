@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 import RiskMap from './components/Map/RiskMap';
+import MapLegend from './components/Map/MapLegend';
 import WardPanel from './components/Planning/WardPanel';
 import SettingsPanel from './components/Planning/SettingsPanel';
 import DataPanel from './components/Planning/DataPanel';
@@ -20,6 +21,12 @@ export default function App() {
   const [eventsEnabled, setShowEvents] = useState(false);
   const showEvents = dataSource === 'mock' && eventsEnabled;
   const [panel, setPanel] = useState('wards');
+  const [panelOpen, setPanelOpen] = useState(true);
+  const [dockHeight, setDockHeight] = useState(84);
+  const dockRef = useRef(null);
+  const sidebarRef = useRef(null);
+  const returnFocusRef = useRef(null);
+  const wardsButtonRef = useRef(null);
   const [selectedId, setSelectedId] = useState(null);
   const [search, setSearch] = useState('');
   const panelRef = useRef(null);
@@ -28,12 +35,42 @@ export default function App() {
     catch { return true; }
   });
 
+  const closeSidebar = useCallback(() => {
+    setPanelOpen(false);
+    const trigger = returnFocusRef.current?.isConnected ? returnFocusRef.current : wardsButtonRef.current;
+    trigger?.focus({ preventScroll:true });
+  }, []);
+
+  const togglePanel = (next) => {
+    returnFocusRef.current = document.activeElement;
+    if (panel === next && panelOpen) { closeSidebar(); return; }
+    setPanel(next);
+    setPanelOpen(true);
+    if (next === 'wards') setSelectedId(null);
+  };
+
   useEffect(() => {
-    panelRef.current?.scrollTo({ top: 0 });
-    if (window.matchMedia('(max-width: 800px)').matches && (selectedId || panel !== 'wards')) {
-      panelRef.current?.scrollIntoView({ block: 'start' });
-    }
-  }, [selectedId, panel, dataSource]);
+    const observer = new ResizeObserver(([entry]) => setDockHeight(entry.target.getBoundingClientRect().height));
+    if (dockRef.current) observer.observe(dockRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    panelRef.current?.scrollTo({ top:0 });
+  }, [selectedId, panel, dataSource, panelOpen]);
+
+  useEffect(() => {
+    if (panelOpen) sidebarRef.current?.focus({ preventScroll:true });
+  }, [panelOpen, panel, selectedId]);
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    const handleKey = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); closeSidebar(); }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [panelOpen, closeSidebar]);
 
   const rawStatus = useRemoteData('/api/status', attempt);
   const status = rawStatus.status === 'ready' && typeof rawStatus.data?.model_loaded !== 'boolean'
@@ -48,28 +85,28 @@ export default function App() {
   const premises = premisesValid ? premisesResource.data : [];
   const premisesStatus = premisesResource.status === 'ready' && !premisesValid ? 'error' : premisesResource.status;
   const retry = () => setAttempt((value) => value + 1);
-  const chooseWard = (id) => { setSelectedId(id); setPanel('wards'); };
+  const chooseWard = (id) => { returnFocusRef.current = document.activeElement; setSelectedId(id); setPanel('wards'); setPanelOpen(true); };
   const setTheme = (dark) => {
     setNightMode(dark);
     try { window.localStorage.setItem('fireSightNightMode', String(dark)); } catch { /* Storage may be unavailable. */ }
   };
 
-  return <div className={`planning-app${nightMode ? ' night-mode' : ''}`}>
+  return <div className={`planning-app${nightMode ? ' night-mode' : ''}`} style={{'--dock-height':`${dockHeight}px`}}>
     <nav className="app-rail" aria-label="Workspace navigation">
-      <button className={`rail-button${panel === 'wards' ? ' active' : ''}`} aria-current={panel === 'wards' ? 'page' : undefined} onClick={() => { setPanel('wards'); setSelectedId(null); }} aria-label="Priority wards" title="Priority wards">
+      <button className={`rail-button${panelOpen && panel === 'wards' ? ' active' : ''}`} ref={wardsButtonRef} aria-expanded={panelOpen && panel === 'wards'} aria-controls="insight-panel" onClick={() => togglePanel('wards')} aria-label="Priority wards" title="Priority wards">
         <Icon name="map"/><span>Wards</span>
       </button>
-      <button className={`rail-button${panel === 'method' ? ' active' : ''}`} aria-current={panel === 'method' ? 'page' : undefined} onClick={() => setPanel('method')} aria-label="Data and method" title="Data and method">
+      <button className={`rail-button${panelOpen && panel === 'method' ? ' active' : ''}`} aria-expanded={panelOpen && panel === 'method'} aria-controls="insight-panel" onClick={() => togglePanel('method')} aria-label="Data and method" title="Data and method">
         <Icon name="info"/><span>Data</span>
       </button>
       <div className="rail-spacer"/>
-      <button className={`rail-button${panel === 'settings' ? ' active' : ''}`} aria-current={panel === 'settings' ? 'page' : undefined} onClick={() => setPanel('settings')} aria-label="Settings" title="Settings">
+      <button className={`rail-button${panelOpen && panel === 'settings' ? ' active' : ''}`} aria-expanded={panelOpen && panel === 'settings'} aria-controls="insight-panel" onClick={() => togglePanel('settings')} aria-label="Settings" title="Settings">
         <Icon name="settings"/><span>Settings</span>
       </button>
     </nav>
     <main className="planning-main">
       <div className="workspace">
-        <div className="filter-dock" role="group" aria-label="Map filters">
+        <div ref={dockRef} className="filter-dock" role="group" aria-label="Map filters">
           <div className="dock-state"><span>Data</span><strong>{dataSource === 'mock' ? 'Mock' : 'Model'}</strong></div>
           <label className="dock-toggle">
             <input type="checkbox" checked={showWards} onChange={(e) => setShowWards(e.target.checked)}/>
@@ -92,9 +129,10 @@ export default function App() {
               {TIME_FRAME_OPTIONS.map((period) => <button key={period} aria-pressed={timeFrame === period} onClick={() => setTimeFrame(period)}>{period}</button>)}
             </div>
           </div>
+          {((showWards && features.length > 0) || (showPremises && premises.length > 0) || showEvents) && <MapLegend timeFrame={timeFrame} showWards={showWards && features.length > 0} showPremises={showPremises && premises.length > 0} showEvents={showEvents}/>}
         </div>
         <section className="map-stage" aria-label="Glasgow ward map">
-          <RiskMap features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} showEvents={showEvents} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
+          <RiskMap panelOpen={panelOpen} dockHeight={dockHeight} features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} showEvents={showEvents} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
           <div className="map-notices">
             {(wardResource.status === 'loading' || wardError) && <div className="map-notice" role={wardError ? 'alert' : 'status'}>
               {wardError ? <>
@@ -110,10 +148,15 @@ export default function App() {
             </div>}
           </div>
         </section>
-        <aside ref={panelRef} className="insight-panel" aria-label={panel === 'wards' ? 'Ward priorities and details' : panel === 'method' ? 'Data and method' : 'Settings'}>
-          {panel === 'wards' && <WardPanel features={features} selected={selected} onSelect={chooseWard} onBack={() => setSelectedId(null)} dataSource={dataSource} timeFrame={timeFrame} loading={wardResource.status === 'loading'} error={wardError} onRetry={retry} search={search} onSearchChange={setSearch}/>}
-          {panel === 'method' && <DataPanel/>}
-          {panel === 'settings' && <SettingsPanel dataSource={dataSource} setDataSource={setDataSource} nightMode={nightMode} setTheme={setTheme} status={status} onRetry={retry} premisesStatus={premisesStatus} premisesCount={premises.length}/>}
+        <aside id="insight-panel" ref={sidebarRef} hidden={!panelOpen} tabIndex={-1} className="insight-panel" aria-label={panel === 'wards' ? 'Ward priorities and details' : panel === 'method' ? 'Data and method' : 'Settings'}>
+          {panelOpen && <>
+            <button className="sidebar-close" aria-label="Close sidebar" title="Close sidebar" onClick={closeSidebar}><Icon name="close"/></button>
+            <div ref={panelRef} className="panel-content">
+              {panel === 'wards' && <WardPanel features={features} selected={selected} onSelect={chooseWard} onBack={() => setSelectedId(null)} dataSource={dataSource} timeFrame={timeFrame} loading={wardResource.status === 'loading'} error={wardError} onRetry={retry} search={search} onSearchChange={setSearch}/>}
+              {panel === 'method' && <DataPanel/>}
+              {panel === 'settings' && <SettingsPanel dataSource={dataSource} setDataSource={setDataSource} nightMode={nightMode} setTheme={setTheme} status={status} onRetry={retry} premisesStatus={premisesStatus} premisesCount={premises.length}/>}
+            </div>
+          </>}
         </aside>
       </div>
     </main>
