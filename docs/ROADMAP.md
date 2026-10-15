@@ -18,7 +18,8 @@ An unchecked item is planned work, not a completed capability.
 
 ## Then: prepare a portfolio release
 
-- [ ] Confirm the hackathon submission commit and tag it `hackathon-final`.
+- [x] Select and preserve `c85ae93` as the team baseline after comparing it with `a34243c`.
+- [ ] Identify the exact hackathon demo commit if it can be recovered; keep it distinct from the selected baseline.
 - [x] Create a standalone personal repository, retaining team credit, history, and the baseline tag.
 - [x] Document individual hackathon contributions and retain team credit.
 - [x] Confirm team agreement and establish the public portfolio repository.

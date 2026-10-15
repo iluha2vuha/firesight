@@ -8,10 +8,12 @@ FireSight brings area risk indicators, historical fire trends, and prototype pre
 
 This repository continues the hackathon prototype as a personal portfolio project. Team work and subsequent personal improvements are credited separately.
 
-- **Preserved team baseline:** tag `team-baseline`, commit `c85ae93`. This is the latest team `main` retrieved; it is not yet confirmed as the final hackathon submission.
+- **Selected team baseline:** tag `team-baseline`, commit `c85ae93`, the latest team `main`. This is the starting point for improvements; the exact hackathon demo commit remains unconfirmed.
 - **Development branch:** `portfolio/improvements`.
 - **Personal repository:** [iluha2vuha/firesight](https://github.com/iluha2vuha/firesight), a public, standalone continuation retaining the original team history and credit.
 - **Known issues:** CARTO tiles display an API-key warning, and model mode requires generated data files. See the [roadmap](docs/ROADMAP.md).
+
+The preceding team commit, `a34243c`, was checked alongside the selected baseline. Both frontend production builds passed, but the older version returned HTTP 500 for the zone list, top-zone list, and individual-zone API requests with the committed model output loaded. The selected baseline passed those requests, plus the health, model-status, ward GeoJSON, premises, and built-in ward-explanation checks. These checks establish a starting point; they do not mean every application flow is bug-free.
 
 ## What the prototype includes
 
