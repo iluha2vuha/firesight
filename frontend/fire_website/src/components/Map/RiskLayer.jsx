@@ -7,7 +7,7 @@ export default function RiskLayer({ features, timeFrame, selectedId, onSelect })
     data={{ type: 'FeatureCollection', features }}
     style={(feature) => {
       const selected = feature.properties.ward_id === selectedId;
-      return { fillColor: scoreColor(displayedScore(feature, timeFrame)), fillOpacity: selected ? 0.6 : 0.23, color: selected ? '#e2f4ef' : '#a2acb5', weight: selected ? 2.5 : 1, opacity: selected ? 1 : 0.65 };
+      return { fillColor: scoreColor(displayedScore(feature, timeFrame)), fillOpacity: 0.58, color: selected ? '#fff' : '#a2acb5', weight: selected ? 2.5 : 1, opacity: selected ? 1 : 0.65 };
     }}
     onEachFeature={(feature, layer) => {
       layer.bindTooltip(feature.properties.ward_name, { sticky: true, className: 'ward-tooltip' });

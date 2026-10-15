@@ -1,7 +1,7 @@
 import { riskForTimeframe } from './risk.js';
 
 export const scoreBand = (score) => score >= 75 ? 'high' : score >= 40 ? 'medium' : 'low';
-export const scoreColor = (score) => ({ high: '#e38b83', medium: '#d6b26e', low: '#68b7a6' }[scoreBand(score)]);
+export const scoreColor = (score) => ({ high: '#ef6461', medium: '#f2c94c', low: '#52b56b' }[scoreBand(score)]);
 export const bandLabel = (score) => ({ high: 'Higher', medium: 'Medium', low: 'Lower' }[scoreBand(score)]);
 
 export const rankedWards = (features = [], search = '') => {
