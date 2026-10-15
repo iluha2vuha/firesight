@@ -69,7 +69,7 @@ Open the address Vite prints, normally <http://localhost:5173>. Keep both server
 
 | Variable | File | Purpose |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | `backend/.env` | Optional key for generated explanations. Without it, the backend uses built-in explanations. |
+| `OPENAI_API_KEY` | `backend/.env` | Required for Model suggestions; Mock uses built-in examples without a key. |
 | `OPENAI_MODEL` | `backend/.env` | Optional model selection; defaults to `gpt-4o-mini`. |
 | `VITE_BACKEND_URL` | `frontend/fire_website/.env.local` | Backend address; defaults to `http://localhost:8000`. |
 | `VITE_EVENTS_API_URL` | `frontend/fire_website/.env.local` | Optional events endpoint; the app uses sample events if unavailable. |

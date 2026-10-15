@@ -498,13 +498,18 @@ def openai_explanation(mode, record, period="Current"):
         "Do not describe authored profiles as model evidence. If the selected projection is missing, "
         "do not infer a count. Keep options concise and tied to the supplied figures."
     )
+    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    generation_options = {"max_completion_tokens": 350, "temperature": 0.3}
+    if model == "gpt-6-luna" or model.startswith("gpt-6-luna-"):
+        # Short suggestions need no reasoning budget; sampling is supported at none.
+        generation_options["reasoning_effort"] = "none"
     try:
         with openai.OpenAI(api_key=api_key, timeout=15.0, max_retries=0) as client:
             response = client.chat.completions.create(
-                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                model=model,
                 messages=[{"role": "system", "content": system_prompt},
                           {"role": "user", "content": json.dumps(context, allow_nan=False)}],
-                temperature=0.3, max_tokens=350, store=False,
+                store=False, **generation_options,
             )
         choice = response.choices[0] if response.choices else None
         text = choice.message.content if choice else None
@@ -517,6 +522,10 @@ def openai_explanation(mode, record, period="Current"):
         raise suggestion_error(503, "openai_authentication", "OpenAI authentication failed. Check the server API key.") from None
     except openai.PermissionDeniedError:
         raise suggestion_error(503, "openai_access", "The configured OpenAI model is not available to this API project.") from None
+    except openai.NotFoundError:
+        raise suggestion_error(503, "openai_model_unavailable", "The configured OpenAI model was not found or is unavailable to this API project.") from None
+    except openai.BadRequestError:
+        raise suggestion_error(502, "openai_invalid_request", "OpenAI rejected the server request. Check the configured model and its supported parameters.") from None
     except openai.RateLimitError as exc:
         message = "OpenAI quota is exhausted. Check API billing and limits." if exc.code == "insufficient_quota" else "OpenAI is busy. Try again shortly."
         raise suggestion_error(429, "openai_rate_limit", message) from None

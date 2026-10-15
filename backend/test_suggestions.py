@@ -86,10 +86,38 @@ class SuggestionTests(unittest.TestCase):
         args = client.chat.completions.create.call_args.kwargs
         self.assertEqual(args['model'], 'configured-model')
         self.assertFalse(args['store'])
+        self.assertEqual(args['max_completion_tokens'], 350)
+        self.assertNotIn('max_tokens', args)
+        self.assertNotIn('reasoning_effort', args)
         context = json.loads(args['messages'][1]['content'])
         self.assertEqual(context['selected_annual_projection'], 23)
         self.assertEqual(text, 'Generated option.')
         self.assertNotIn('test-key', json.dumps(args))
+
+    def test_luna_uses_supported_output_limit_and_disables_reasoning(self):
+        for model in ['gpt-6-luna', 'gpt-6-luna-2026-10-01']:
+            with self.subTest(model=model), patch.dict(os.environ, {'OPENAI_API_KEY':'test-key', 'OPENAI_MODEL':model}), patch('openai.OpenAI') as factory:
+                client = factory.return_value.__enter__.return_value
+                client.chat.completions.create.return_value = SimpleNamespace(choices=[SimpleNamespace(finish_reason='stop', message=SimpleNamespace(content='Generated option.'))])
+                main.openai_explanation('ward', main.wards_by_id[WARD_ID])
+                args = client.chat.completions.create.call_args.kwargs
+                self.assertEqual(args['model'], model)
+                self.assertEqual(args['max_completion_tokens'], 350)
+                self.assertEqual(args['reasoning_effort'], 'none')
+                self.assertNotIn('max_tokens', args)
+
+    def test_request_and_model_errors_have_actionable_safe_messages(self):
+        request = httpx.Request('POST', 'https://api.openai.com/v1/chat/completions')
+        for failure, code in [
+            (openai.BadRequestError('secret error', response=httpx.Response(400, request=request), body={}), 'openai_invalid_request'),
+            (openai.NotFoundError('secret error', response=httpx.Response(404, request=request), body={}), 'openai_model_unavailable'),
+        ]:
+            with self.subTest(code=code), patch.dict(os.environ, {'OPENAI_API_KEY':'test-key'}), patch('openai.OpenAI') as factory:
+                factory.return_value.__enter__.return_value.chat.completions.create.side_effect = failure
+                with self.assertRaises(HTTPException) as error:
+                    main.openai_explanation('ward', main.wards_by_id[WARD_ID])
+                self.assertEqual(error.exception.detail['code'], code)
+                self.assertNotIn('secret error', str(error.exception.detail))
 
     def test_empty_and_truncated_responses_are_not_replaced_with_templates(self):
         for choices in [[], [SimpleNamespace(finish_reason='stop', message=SimpleNamespace(content=' '))], [SimpleNamespace(finish_reason='length', message=SimpleNamespace(content='Truncated.'))]]:

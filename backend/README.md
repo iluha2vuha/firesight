@@ -238,6 +238,11 @@ SDK timeout, no automatic retries, and response storage disabled. Generation
 runs only when requested, not while browsing wards. The status endpoint exposes
 only `openai_configured`, never the key.
 
+To use GPT-6 Luna, set `OPENAI_MODEL=gpt-6-luna` in the same file. Requests use
+`max_completion_tokens` and explicitly disable Luna reasoning for these short
+suggestions. Invalid request parameters and unavailable models return distinct
+errors instead of a generic retry message.
+
 Scores, forecasts, chart values and ranges remain model outputs; the API writes
 suggestions, not the underlying numeric prediction. Methodology and validation
 limits are described in Data & method.
