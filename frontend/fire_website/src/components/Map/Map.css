@@ -4,16 +4,16 @@
 .risk-map-container .leaflet-tile { filter:grayscale(1) contrast(.88) brightness(1.04); }
 .risk-map-container.night-mode .leaflet-tile { filter:invert(1) hue-rotate(180deg) grayscale(.85) contrast(.82) brightness(.75); }
 .risk-map-container .leaflet-container { font:inherit; }
-.map-tools { position:absolute; left:18px; bottom:32px; z-index:700; display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line); border-radius:11px; box-shadow:0 2px 8px #0002; overflow:hidden; }
+.map-tools { position:absolute; left:calc(var(--map-left) + 18px); bottom:32px; z-index:700; display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line); border-radius:11px; box-shadow:0 2px 8px #0002; overflow:hidden; }
 .map-tools button { color:var(--muted); background:transparent; border:0; border-bottom:1px solid var(--line); width:40px; height:40px; display:grid; place-items:center; }
 .map-tools button:last-child { border-bottom:0; }
 .map-tools button:hover { background:var(--raised); color:var(--text); }
-.map-legend { border-left:1px solid var(--line); padding:4px 0 4px 14px; flex-shrink:0; }
-.map-legend > strong { display:block; font-size:11px; font-weight:500; margin-bottom:10px; }
-.legend-bands { display:flex; gap:15px; }
-.legend-bands > span { display:grid; grid-template-columns:8px auto; align-items:center; gap:5px 6px; font-size:11px; }
+.map-legend { border-left:1px solid var(--line); padding:2px 0 2px 10px; flex-shrink:0; }
+.map-legend > strong { display:block; font-size:10px; font-weight:500; margin-bottom:6px; }
+.legend-bands { display:flex; gap:10px; }
+.legend-bands > span { display:grid; grid-template-columns:8px auto; align-items:center; gap:4px 5px; font-size:10px; }
 .legend-bands i { width:8px; height:8px; border-radius:1px; }
-.legend-bands small { grid-column:2; color:var(--muted); font-size:10px; }
+.legend-bands small { grid-column:2; color:var(--muted); font-size:9px; }
 .leaflet-container .leaflet-control-attribution { font-size:9px; color:var(--muted); background:var(--surface); }
 .leaflet-container .leaflet-control-attribution a { color:var(--muted); }
 .leaflet-tooltip.ward-tooltip { color:var(--text); border:1px solid var(--line); background:var(--surface); box-shadow:0 2px 6px #0002; border-radius:5px; font-size:12px; padding:6px 9px; }

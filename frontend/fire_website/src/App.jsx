@@ -28,6 +28,8 @@ export default function App() {
   const returnFocusRef = useRef(null);
   const wardsButtonRef = useRef(null);
   const [selectedId, setSelectedId] = useState(null);
+  const [overviewRequest, setOverviewRequest] = useState(0);
+  const [mapScope, setMapScope] = useState('wards');
   const [search, setSearch] = useState('');
   const panelRef = useRef(null);
   const [nightMode, setNightMode] = useState(() => {
@@ -41,12 +43,22 @@ export default function App() {
     trigger?.focus({ preventScroll:true });
   }, []);
 
+  const showAllWards = () => {
+    setMapScope('wards');
+    setSelectedId(null);
+    setSearch('');
+    setShowWards(true);
+    setPanel('wards');
+    setPanelOpen(true);
+    setOverviewRequest((request) => request + 1);
+  };
+
   const togglePanel = (next) => {
     returnFocusRef.current = document.activeElement;
+    if (next === 'wards') { showAllWards(); return; }
     if (panel === next && panelOpen) { closeSidebar(); return; }
     setPanel(next);
     setPanelOpen(true);
-    if (next === 'wards') setSelectedId(null);
   };
 
   useEffect(() => {
@@ -85,7 +97,20 @@ export default function App() {
   const premises = premisesValid ? premisesResource.data : [];
   const premisesStatus = premisesResource.status === 'ready' && !premisesValid ? 'error' : premisesResource.status;
   const retry = () => setAttempt((value) => value + 1);
-  const chooseWard = (id) => { returnFocusRef.current = document.activeElement; setSelectedId(id); setPanel('wards'); setPanelOpen(true); };
+  const showScotland = () => {
+    setMapScope('scotland');
+    setPanelOpen(false);
+    setOverviewRequest((request) => request + 1);
+  };
+  const chooseWard = (id) => {
+    returnFocusRef.current = document.activeElement;
+    setMapScope('wards');
+    setSelectedId(id);
+    setShowWards(true);
+    setPanel('wards');
+    setPanelOpen(true);
+    setOverviewRequest((request) => request + 1);
+  };
   const setTheme = (dark) => {
     setNightMode(dark);
     try { window.localStorage.setItem('fireSightNightMode', String(dark)); } catch { /* Storage may be unavailable. */ }
@@ -105,34 +130,36 @@ export default function App() {
       </button>
     </nav>
     <main className="planning-main">
-      <div className="workspace">
-        <div ref={dockRef} className="filter-dock" role="group" aria-label="Map filters">
-          <div className="dock-state"><span>Data</span><strong>{dataSource === 'mock' ? 'Mock' : 'Model'}</strong></div>
-          <label className="dock-toggle">
-            <input type="checkbox" checked={showWards} onChange={(e) => setShowWards(e.target.checked)}/>
-            <span className="dock-icon dock-icon-wards"><Icon name="map" size={25}/></span>
-            <span>Ward scores</span>
-          </label>
-          {dataSource === 'mock' && <label className="dock-toggle">
-            <input aria-label="High-risk premises examples" type="checkbox" checked={showPremises} onChange={(e) => setShowPremises(e.target.checked)}/>
-            <span className="dock-icon dock-icon-premises"><Icon name="pin" size={25}/></span>
-            <span>Premises</span>
-          </label>}
-          {dataSource === 'mock' && <label className="dock-toggle">
-            <input aria-label="Event examples" type="checkbox" checked={showEvents} onChange={(e) => setShowEvents(e.target.checked)}/>
-            <span className="dock-icon dock-icon-events"><Icon name="calendar" size={25}/></span>
-            <span>Events</span>
-          </label>}
-          <div className="dock-period">
-            <span>Timeframe</span>
-            <div className="period-options" role="group" aria-label="Projection period">
-              {TIME_FRAME_OPTIONS.map((period) => <button key={period} aria-pressed={timeFrame === period} onClick={() => setTimeFrame(period)}>{period}</button>)}
+      <div className={`workspace${panelOpen ? ' sidebar-open' : ''}`}>
+        <div className="dock-area">
+          <div ref={dockRef} className="filter-dock" role="group" aria-label="Map filters">
+            <div className="dock-state"><span>Data</span><strong>{dataSource === 'mock' ? 'Mock' : 'Model'}</strong></div>
+            <label className="dock-toggle">
+              <input type="checkbox" checked={showWards} onChange={(e) => { setShowWards(e.target.checked); if (e.target.checked) { setMapScope('wards'); setOverviewRequest((request) => request + 1); } }}/>
+              <span className="dock-icon dock-icon-wards"><Icon name="map" size={20}/></span>
+              <span>Ward scores</span>
+            </label>
+            {dataSource === 'mock' && <label className="dock-toggle">
+              <input aria-label="High-risk premises examples" type="checkbox" checked={showPremises} onChange={(e) => setShowPremises(e.target.checked)}/>
+              <span className="dock-icon dock-icon-premises"><Icon name="pin" size={20}/></span>
+              <span>Premises</span>
+            </label>}
+            {dataSource === 'mock' && <label className="dock-toggle">
+              <input aria-label="Event examples" type="checkbox" checked={showEvents} onChange={(e) => setShowEvents(e.target.checked)}/>
+              <span className="dock-icon dock-icon-events"><Icon name="calendar" size={20}/></span>
+              <span>Events</span>
+            </label>}
+            <div className="dock-period">
+              <span>Timeframe</span>
+              <div className="period-options" role="group" aria-label="Projection period">
+                {TIME_FRAME_OPTIONS.map((period) => <button key={period} aria-pressed={timeFrame === period} onClick={() => setTimeFrame(period)}>{period}</button>)}
+              </div>
             </div>
+            {((showWards && features.length > 0) || (showPremises && premises.length > 0) || showEvents) && <MapLegend timeFrame={timeFrame} showWards={showWards && features.length > 0} showPremises={showPremises && premises.length > 0} showEvents={showEvents}/>}
           </div>
-          {((showWards && features.length > 0) || (showPremises && premises.length > 0) || showEvents) && <MapLegend timeFrame={timeFrame} showWards={showWards && features.length > 0} showPremises={showPremises && premises.length > 0} showEvents={showEvents}/>}
         </div>
         <section className="map-stage" aria-label="Glasgow ward map">
-          <RiskMap panelOpen={panelOpen} dockHeight={dockHeight} features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} showEvents={showEvents} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
+          <RiskMap mapScope={mapScope} onScotland={showScotland} overviewRequest={overviewRequest} onOverview={showAllWards} panelOpen={panelOpen} dockHeight={dockHeight} features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} showEvents={showEvents} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
           <div className="map-notices">
             {(wardResource.status === 'loading' || wardError) && <div className="map-notice" role={wardError ? 'alert' : 'status'}>
               {wardError ? <>
@@ -152,7 +179,7 @@ export default function App() {
           {panelOpen && <>
             <button className="sidebar-close" aria-label="Close sidebar" title="Close sidebar" onClick={closeSidebar}><Icon name="close"/></button>
             <div ref={panelRef} className="panel-content">
-              {panel === 'wards' && <WardPanel features={features} selected={selected} onSelect={chooseWard} onBack={() => setSelectedId(null)} dataSource={dataSource} timeFrame={timeFrame} loading={wardResource.status === 'loading'} error={wardError} onRetry={retry} search={search} onSearchChange={setSearch}/>}
+              {panel === 'wards' && <WardPanel features={features} selected={selected} onSelect={chooseWard} onBack={showAllWards} dataSource={dataSource} timeFrame={timeFrame} loading={wardResource.status === 'loading'} error={wardError} onRetry={retry} search={search} onSearchChange={setSearch}/>}
               {panel === 'method' && <DataPanel/>}
               {panel === 'settings' && <SettingsPanel dataSource={dataSource} setDataSource={setDataSource} nightMode={nightMode} setTheme={setTheme} status={status} onRetry={retry} premisesStatus={premisesStatus} premisesCount={premises.length}/>}
             </div>
