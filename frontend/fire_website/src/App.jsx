@@ -125,7 +125,6 @@ export default function App() {
       <div className={`workspace${panelOpen ? ' sidebar-open' : ''}`}>
         <div className="dock-area">
           <div ref={dockRef} className="filter-dock" role="group" aria-label="Map filters">
-            <div className="dock-state"><span>Data</span><strong>{dataSource === 'mock' ? 'Mock' : 'Model'}</strong></div>
             <label className="dock-toggle">
               <input type="checkbox" checked={showWards} onChange={(e) => { setShowWards(e.target.checked); if (e.target.checked) setOverviewRequest((request) => request + 1); }}/>
               <span className="dock-icon dock-icon-wards"><Icon name="map" size={20}/></span>

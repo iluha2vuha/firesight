@@ -46,9 +46,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .dock-toggle:has(input:checked) .dock-icon-events { background:#8c653b; border-color:#c49a6a; color:#fff; }
 .dock-period { display: flex; flex-direction: column; align-items: flex-start; gap:4px; border-left: 1px solid var(--line); padding:2px 0 2px 9px; font-size:10px; }
 .dock-period > span { color: var(--muted); }
-.dock-state { min-width:36px; display:flex; flex-direction:column; gap:5px; padding:0 3px; font-size:11px; }
-.dock-state > span { color:var(--muted); font-size:10px; }
-.dock-state strong { font-weight:500; }
 .period-options { display:flex; gap:3px; padding:3px; border:1px solid var(--line); border-radius:11px; background:var(--bg); }
 .period-options button { min-height:30px; padding:0 7px; border:0; border-radius:7px; color:var(--muted); background:transparent; white-space:nowrap; font-size:11px; }
 .period-options button[aria-pressed='true'] { color:var(--text); background:var(--selected); }
@@ -142,7 +139,6 @@ summary { cursor: pointer; font-size: 12px; font-weight: 500; line-height: 1.6; 
   .filter-dock { width:calc(100% - 16px); gap:6px; padding:6px; border-radius:17px; }
   .dock-toggle { min-width:62px; font-size:10px; }
   .dock-toggle:nth-of-type(2) { min-width:62px; }
-  .dock-state { min-width:40px; }
   .dock-period { flex-basis:100%; border-left:0; border-top:1px solid var(--line); padding:6px 0 0; gap:4px; }
   .period-options { width:100%; }
   .period-options button { flex:1; min-height:32px; padding:0 5px; font-size:11px; }
@@ -156,7 +152,6 @@ summary { cursor: pointer; font-size: 12px; font-weight: 500; line-height: 1.6; 
 @media (pointer:coarse) { .secondary-button, .back-button, .segmented-control button, .period-options button, .sidebar-close, summary { min-height:44px; } .sidebar-close { width:44px; } .search-field button { min-width:36px; min-height:40px; } }
 @media (max-width:360px) {
   .filter-dock { gap:6px; }
-  .dock-state { min-width:36px; font-size:11px; }
   .dock-toggle { min-width:52px; font-size:10px; }
   .dock-toggle:nth-of-type(2) { min-width:60px; }
   .dock-toggle > span:last-child { max-width:98px; white-space:normal; text-align:center; line-height:1.35; }
