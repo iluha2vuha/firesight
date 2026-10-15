@@ -27,6 +27,8 @@ function MapTools({ features, selectedId }) {
 }
 
 export default function RiskMap({ features, timeFrame, nightMode, showWards, showPremises, premises, selectedId, onSelect }) {
+  const hasWards = showWards && features.length > 0;
+  const hasPremises = showPremises && premises.length > 0;
   return <div className={`risk-map-container${nightMode ? ' night-mode' : ''}`}>
     <MapContainer bounds={GLASGOW_BOUNDS} className="leaflet-map" zoomControl={false}>
       <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} maxZoom={19} referrerPolicy="strict-origin-when-cross-origin"/>
@@ -34,6 +36,6 @@ export default function RiskMap({ features, timeFrame, nightMode, showWards, sho
       {showPremises && <PremisesLayer premises={premises}/>}
       <MapTools features={features} selectedId={selectedId}/>
     </MapContainer>
-    {(showWards || showPremises) && <MapLegend timeFrame={timeFrame} showWards={showWards} showPremises={showPremises}/>}
+    {(hasWards || hasPremises) && <MapLegend timeFrame={timeFrame} showWards={hasWards} showPremises={hasPremises}/>}
   </div>;
 }
