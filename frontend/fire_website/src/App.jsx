@@ -1,181 +1,120 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import RiskMap from './components/Map/RiskMap';
-import TopRiskAreas from './components/Dashboard/TopRiskAreas';
+import WardPanel from './components/Planning/WardPanel';
+import Icon from './components/Planning/Icon';
 import { timeframeLabel } from './utils/forecast';
 
-const TIME_FRAME_OPTIONS = ['Current', 'In 6 months', 'In 1 year', 'In 1.5 years'];
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const PERIODS = ['Current', 'In 6 months', 'In 1 year', 'In 1.5 years'];
 
-function App() {
-  const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[0]);
-  const [dataSource, setDataSource] = useState('mock');
-  const [modelLoaded, setModelLoaded] = useState(false);
-  const [backendStatus, setBackendStatus] = useState('loading');
-  const [statusAttempt, setStatusAttempt] = useState(0);
-  const [showPremises, setShowPremises] = useState(true);
-  const [nightMode, setNightMode] = useState(() => {
-    try {
-      const stored = window.localStorage.getItem('fireSightNightMode');
-      return stored === null ? true : stored === 'true';
-    } catch {
-      return true;
-    }
-  });
-
+function useRemoteData(path, attempt) {
+  const [resource, setResource] = useState({ path: null, status: 'loading', data: null });
   useEffect(() => {
     const controller = new AbortController();
     let cancelled = false;
     const timeout = setTimeout(() => controller.abort(), 10000);
-    const checkStatus = async () => {
-      setBackendStatus('loading');
+    const load = async () => {
+      setResource({ path, status: 'loading', data: null });
       try {
-        const response = await fetch(`${BACKEND_URL}/api/status`, { signal: controller.signal });
-        if (!response.ok) throw new Error('Backend unavailable');
+        const response = await fetch(`${BACKEND_URL}${path}`, { signal: controller.signal });
+        if (!response.ok) throw new Error('Data unavailable');
         const data = await response.json();
-        if (cancelled) return;
-        setModelLoaded(data.model_loaded === true);
-        setBackendStatus('ready');
+        if (!cancelled) setResource({ path, status: 'ready', data });
       } catch {
-        if (!cancelled) {
-          setModelLoaded(false);
-          setBackendStatus('error');
-        }
-      } finally {
-        clearTimeout(timeout);
-      }
+        if (!cancelled) setResource({ path, status: 'error', data: null });
+      } finally { clearTimeout(timeout); }
     };
-    checkStatus();
-    return () => {
-      cancelled = true;
-      controller.abort();
-      clearTimeout(timeout);
-    };
-  }, [statusAttempt]);
-
-  return (
-    <div className={`app-container${nightMode ? ' night-mode' : ''}`}>
-      <header className="app-header">
-        <div className="app-header-brand">
-          <div className="app-header-logo" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12.4 2.2c-.4 2.1-1.8 3.4-3.1 4.7-1.8 1.8-3.6 3.7-3.6 6.8 0 3.3 2.6 6.1 6.3 6.1 3.8 0 6.3-2.8 6.3-6.2 0-4.2-2.8-7.6-5.9-11.4z"
-                fill="url(#flameOuter)"
-              />
-              <path
-                d="M12.2 8.1c-1 1.3-2.2 2.4-2.2 4.4 0 1.7 1.3 3.1 3.1 3.1 1.8 0 3.1-1.4 3.1-3.2 0-1.8-1.1-3.1-2.8-4.3-.4-.3-.8-.6-1.2-1z"
-                fill="url(#flameInner)"
-              />
-              <path d="M16.8 4.2l.5-1.5.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5z" fill="#fde68a" />
-              <defs>
-                <linearGradient id="flameOuter" x1="12" y1="2.2" x2="12" y2="19.8" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#fff7ed" />
-                  <stop offset="0.5" stopColor="#fdba74" />
-                  <stop offset="1" stopColor="#f97316" />
-                </linearGradient>
-                <linearGradient id="flameInner" x1="13.1" y1="8.1" x2="13.1" y2="15.6" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#fef3c7" />
-                  <stop offset="1" stopColor="#fb923c" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-          <div className="app-header-text">
-            <h1>FireSight: Glasgow Risk Predictor</h1>
-            <p>Operational risk view for Glasgow regions</p>
-          </div>
-        </div>
-
-        <div className="app-header-controls">
-          <label className="header-toggle" title="Switch map to dark style">
-            <input
-              type="checkbox"
-              checked={nightMode}
-              onChange={(e) => {
-                const next = e.target.checked;
-                setNightMode(next);
-                try {
-                  window.localStorage.setItem('fireSightNightMode', String(next));
-                } catch {
-                  // ignore
-                }
-              }}
-            />
-            <span>Night mode</span>
-          </label>
-
-          <div className="data-source-toggle">
-            <span className="data-source-label">Data source</span>
-            <div className="data-source-buttons">
-              <button
-                className={`ds-btn ${dataSource === 'mock' ? 'ds-btn--active' : ''}`}
-                onClick={() => setDataSource('mock')}
-              >
-                Mock
-              </button>
-              <button
-                className={`ds-btn ${dataSource === 'model' ? 'ds-btn--active' : ''}`}
-                onClick={() => setDataSource('model')}
-                disabled={!modelLoaded}
-                title={backendStatus === 'error' ? 'Backend unavailable — retry the connection' : backendStatus === 'loading' ? 'Checking model availability' : !modelLoaded ? 'Run the data pipeline first' : 'Switch to model output'}
-              >
-                Model
-              </button>
-            </div>
-          </div>
-          {backendStatus === 'error' && (
-            <button className="ds-btn" onClick={() => setStatusAttempt((value) => value + 1)}>
-              Retry connection
-            </button>
-          )}
-          <span className="app-header-badge">
-            {dataSource === 'model' ? 'Linear model' : 'Mock data'}
-          </span>
-        </div>
-      </header>
-
-      <main className="app-main">
-        <div className="timeframe-control">
-          <label htmlFor="timeframe-select">Time frame</label>
-          <select
-            id="timeframe-select"
-            value={timeFrame}
-            onChange={(event) => setTimeFrame(event.target.value)}
-          >
-            {TIME_FRAME_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {timeframeLabel(option, dataSource)}
-              </option>
-            ))}
-          </select>
-
-          <div className="layer-toggles">
-            <label className="layer-toggle">
-              <input
-                type="checkbox"
-                checked={showPremises}
-                onChange={(e) => setShowPremises(e.target.checked)}
-              />
-              <span>High-risk premises</span>
-            </label>
-          </div>
-        </div>
-
-        <RiskMap
-          key={statusAttempt}
-          timeFrame={timeFrame}
-          dataSource={dataSource}
-          nightMode={nightMode}
-          showPremises={showPremises}
-        />
-
-        <div className={`top-risk-panel${nightMode ? ' night-mode' : ''}`}>
-          <TopRiskAreas dataSource={dataSource} timeFrame={timeFrame} refreshKey={statusAttempt} />
-        </div>
-      </main>
-    </div>
-  );
+    load();
+    return () => { cancelled = true; controller.abort(); clearTimeout(timeout); };
+  }, [path, attempt]);
+  return resource.path === path ? resource : { status: 'loading', data: null };
 }
 
-export default App;
+function MethodPanel() {
+  return <>
+    <div className="panel-heading"><div><span className="eyebrow">READING THE DATA</span><h2>Data & method</h2></div></div>
+    <section className="detail-section"><h3>Priority score ≠ fire probability</h3><p className="small-copy">The 0–100 score is a relative planning indicator. Higher scores suggest an area to review; lower scores do not establish safety.</p></section>
+    <section className="detail-section"><span className="source-tag">SIMD 2020</span><h3>How ward scores are derived</h3><p className="small-copy">DataZone scores combine deprivation, overcrowding, health vulnerability, central heating and crime indicators. The ward map uses the mean zone score for the ward’s assigned deprivation decile. This is a proxy, not a spatial aggregation of every zone inside a ward.</p></section>
+    <section className="detail-section"><span className="source-tag">2009/10–2022/23</span><h3>Historical fire projections</h3><p className="small-copy">The model fits a recency-weighted linear trend to 14 annual observations of dwelling fires. Year 1, 2 and 3 are separate annual counts after the training period, not cumulative totals or a forecast trained on today’s data.</p><p className="small-copy">The displayed range is an indicative residual-based band for Year 1. Forecast accuracy and uncertainty coverage have not been validated.</p></section>
+    <section className="detail-section"><h3>Scenario adjustments</h3><p className="small-copy">Selecting later periods adds 4, 8 or 12 points to the current score, capped at 100. These fixed adjustments illustrate planning scenarios; they are not predictions learned by the model. The ward ranking always uses current scores.</p></section>
+    <section className="detail-section"><h3>Sample layers</h3><p className="small-copy">Mock mode uses illustrative ward data. City-centre premises are examples with authored scores and inspection priorities, not verified live risk records. They are hidden by default and remain examples in either data mode.</p></section>
+    <div className="panel-footnote"><Icon name="info"/><p>Student prototype. Not validated for operational fire-safety decisions.</p></div>
+  </>;
+}
+
+export default function App() {
+  const [dataSource, setDataSource] = useState('model');
+  const [timeFrame, setTimeFrame] = useState('Current');
+  const [attempt, setAttempt] = useState(0);
+  const [showWards, setShowWards] = useState(true);
+  const [showPremises, setShowPremises] = useState(false);
+  const [panel, setPanel] = useState('wards');
+  const [selectedId, setSelectedId] = useState(null);
+  const panelRef = useRef(null);
+  useEffect(() => {
+    panelRef.current?.scrollTo({ top: 0 });
+    if (window.matchMedia('(max-width: 800px)').matches && (selectedId || panel !== 'wards')) {
+      panelRef.current?.scrollIntoView({ block: 'start' });
+    }
+  }, [selectedId, panel, dataSource]);
+  const [nightMode, setNightMode] = useState(() => {
+    try { return window.localStorage.getItem('fireSightNightMode') !== 'false'; }
+    catch { return true; }
+  });
+  const status = useRemoteData('/api/status', attempt);
+  const wardResource = useRemoteData(`/api/strategic/wards.geojson?source=${dataSource}`, attempt);
+  const premisesResource = useRemoteData('/api/premises?focus=city-centre&risk_band=high', attempt);
+  const validWards = wardResource.data?.type === 'FeatureCollection'
+    && Array.isArray(wardResource.data.features)
+    && wardResource.data.features.every((f) => Number.isFinite(f.properties?.risk_score)
+      && (dataSource !== 'model' || f.properties.data_source === 'model'));
+  const features = validWards ? wardResource.data.features : [];
+  const wardError = wardResource.status === 'error' || (wardResource.status === 'ready' && !validWards);
+  const selected = features.find((f) => f.properties.ward_id === selectedId) || null;
+  const premises = Array.isArray(premisesResource.data) ? premisesResource.data : [];
+  const retry = () => setAttempt((value) => value + 1);
+  const chooseWard = (id) => { setSelectedId(id); setPanel('wards'); };
+  const setTheme = (dark) => {
+    setNightMode(dark);
+    try { window.localStorage.setItem('fireSightNightMode', String(dark)); } catch { /* Storage can be unavailable. */ }
+  };
+
+  return <div className={`planning-app${nightMode ? ' night-mode' : ''}`}>
+    <nav className="app-rail" aria-label="Workspace navigation">
+      <button className={`rail-button${panel === 'wards' ? ' active' : ''}`} onClick={() => { setPanel('wards'); setSelectedId(null); }} aria-label="Priority wards" title="Priority wards"><Icon name="map"/><span>Wards</span></button>
+      <button className={`rail-button${panel === 'method' ? ' active' : ''}`} onClick={() => setPanel('method')} aria-label="Data and method" title="Data and method"><Icon name="info"/><span>Data</span></button>
+      <div className="rail-spacer"/>
+      <button className={`rail-button${panel === 'settings' ? ' active' : ''}`} onClick={() => setPanel('settings')} aria-label="Settings" title="Settings"><Icon name="settings"/><span>Settings</span></button>
+    </nav>
+    <main className="planning-main">
+      <div className="filter-bar">
+        <div className="location-title"><Icon name="pin" size={18}/><strong>Glasgow</strong><span>City wards</span></div>
+        <div className="filter-divider"/>
+        <label className="layer-filter"><input type="checkbox" checked={showWards} onChange={(e) => setShowWards(e.target.checked)}/><span>Ward scores</span></label>
+        <label className="layer-filter"><input type="checkbox" checked={showPremises} onChange={(e) => setShowPremises(e.target.checked)}/><span>City-centre premises</span><span className="sample-tag">Sample</span></label>
+        <div className="filter-spacer"/>
+        <label className="period-filter"><span>Projection</span><select aria-label="Projection period" value={timeFrame} onChange={(e) => setTimeFrame(e.target.value)}>{PERIODS.map((period) => <option key={period} value={period}>{timeframeLabel(period, dataSource)}</option>)}</select></label>
+      </div>
+      <div className="workspace">
+        <section className="map-stage" aria-label="Glasgow ward map">
+          <div className="map-caption"><span className={`status-dot${wardError ? ' error' : ''}`}/><span>{dataSource === 'model' ? 'Historical model' : 'Mock · sample data'}</span><span className="caption-divider">/</span><span>{features.length} wards</span>{timeFrame !== 'Current' && <span className="scenario-tag">Illustrative score scenario</span>}</div>
+          <RiskMap features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
+          {(wardResource.status === 'loading' || wardError) && <div className="map-notice" role={wardError ? 'alert' : 'status'}>{wardError ? <><strong>Unable to load ward data</strong><span>Check the backend connection and retry. If model output is missing, select Mock in Settings.</span><button className="secondary-button" onClick={retry}>Retry connection</button></> : 'Loading Glasgow wards…'}</div>}
+          {showPremises && premisesResource.status !== 'ready' && <div className="layer-notice" role="status">{premisesResource.status === 'error' ? <><span>Example premises could not be loaded.</span><button onClick={retry}>Retry</button></> : 'Loading example premises…'}</div>}
+          <div className="map-disclaimer">Planning prototype · scores are not fire probabilities</div>
+        </section>
+        <aside ref={panelRef} className="insight-panel" aria-label={panel === 'wards' ? 'Ward priorities and details' : panel === 'method' ? 'Data and method' : 'Settings'}>
+          {panel === 'wards' && <WardPanel features={features} selected={selected} onSelect={chooseWard} onBack={() => setSelectedId(null)} dataSource={dataSource} timeFrame={timeFrame} loading={wardResource.status === 'loading'} error={wardError} onRetry={retry}/>}
+          {panel === 'method' && <MethodPanel/>}
+          {panel === 'settings' && <>
+            <div className="panel-heading"><div><span className="eyebrow">WORKSPACE</span><h2>Settings</h2></div></div>
+            <section className="detail-section"><h3>Data source</h3><div className="segmented-control" role="group" aria-label="Data source"><button aria-pressed={dataSource === 'model'} onClick={() => setDataSource('model')} disabled={status.status === 'ready' && !status.data?.model_loaded}>Model</button><button aria-pressed={dataSource === 'mock'} onClick={() => setDataSource('mock')}>Mock</button></div><p className="small-copy">Model uses historical statistics and derived scores. Mock uses sample ward scores and incident counts.</p>{status.status === 'error' ? <><p className="error-copy" role="alert">Backend connection unavailable.</p><button className="secondary-button" onClick={retry}>Retry connection</button></> : status.status === 'loading' ? <p className="small-copy" role="status">Checking model availability…</p> : <p className="availability"><span className="status-dot"/>{status.data?.model_loaded ? 'Model output available' : 'Model output not loaded'}</p>}</section>
+            <section className="detail-section"><h3>Appearance</h3><div className="segmented-control" role="group" aria-label="Appearance"><button aria-pressed={nightMode} onClick={() => setTheme(true)}><Icon name="moon" size={16}/>Dark</button><button aria-pressed={!nightMode} onClick={() => setTheme(false)}><Icon name="sun" size={16}/>Light</button></div><p className="small-copy">Your preference is saved on this device.</p></section>
+            <section className="detail-section"><h3>Map layers</h3><p className="small-copy">Use the filter bar above the map to show ward scores and sample city-centre premises, or change the projection period.</p><p className="small-copy">{premisesResource.status === 'ready' ? `${premises.length} higher-score example premises available.` : 'Example premises data is not currently available.'}</p></section>
+          </>}
+        </aside>
+      </div>
+    </main>
+  </div>;
+}

@@ -8,14 +8,13 @@ This repository is Illia Zakharov's personal continuation of the [original team 
 
 ## Features
 
-- **Interactive risk map:** explore risk indicators across 23 Glasgow wards, with ranked areas and supporting risk drivers.
-- **Premises overlay:** view prototype City Centre premises profiles and inspection priorities.
+- **Ward priorities:** search a ranked ward list and select a ward to inspect its map outline, score, context and projection chart.
 - **Forecast views:** compare current indicators with Year 1, Year 2, and Year 3 model projections (Mock mode uses sample 6-, 12-, and 18-month views).
-- **Mock and model modes:** explore sample data or generated DataZone scores and ward forecasts.
-- **Risk explanations:** view prevention recommendations, with optional OpenAI-generated explanations and a built-in fallback.
-- **Day and night views:** switch the dashboard and map styling.
+- **Planning guidance:** load optional generated or built-in suggestions from the ward detail panel.
+- **Sample premises:** inspect an explicitly labelled illustrative city-centre layer, hidden by default.
+- **Workspace settings:** choose Model/Mock and dark/light appearance in Settings; filter map layers and projection periods above the map.
 
-In Model mode, the ward map starts from the existing model score (the mean DataZone score for the ward's SIMD decile). Future model views add 4, 8, or 12 risk points for Years 1, 2, or 3, capped at 100. These are scenario adjustments; incident forecasts are shown separately as annual counts for each projected year, rather than cumulative totals. Mock mode retains its illustrative month-based data.
+In Model mode, the ward map starts from the existing model score (the mean DataZone score for the ward's SIMD decile). Future model views add 4, 8, or 12 risk points for Years 1, 2, or 3, capped at 100. These are scenario adjustments; incident forecasts are shown separately as annual counts for each projected year, rather than cumulative totals. These historical projections follow the 2009/10–2022/23 training data and are not refreshed rolling forecasts. Mock mode retains its illustrative month-based data.
 
 FireSight is a student prototype for exploring prevention planning. Its scores and forecasts have not been validated for operational use and do not determine whether a building is safe.
 
