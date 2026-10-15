@@ -9,12 +9,12 @@ This repository is Illia Zakharov's personal continuation of the [original team 
 ## Features
 
 - **Ward priorities:** search a ranked ward list and select a ward to inspect its map outline, score, context and projection chart.
-- **Forecast views:** compare current indicators with Year 1, Year 2, and Year 3 model projections (Mock mode uses sample 6-, 12-, and 18-month views).
+- **Forecast views:** compare current indicators with Year 1, Year 2, and Year 3 projections. The same whole-year scenario controls are used in both modes; annual incident forecasts are provided by Model mode.
 - **Planning guidance:** load optional generated or built-in suggestions from the ward detail panel.
 - **Sample premises:** inspect an explicitly labelled illustrative city-centre layer, hidden by default.
 - **Workspace settings:** choose Model/Mock and dark/light appearance in Settings; filter map layers and projection periods above the map.
 
-In Model mode, the ward map starts from the existing model score (the mean DataZone score for the ward's SIMD decile). Future model views add 4, 8, or 12 risk points for Years 1, 2, or 3, capped at 100. These are scenario adjustments; incident forecasts are shown separately as annual counts for each projected year, rather than cumulative totals. These historical projections follow the 2009/10–2022/23 training data and are not refreshed rolling forecasts. Mock mode retains its illustrative month-based data.
+In Model mode, the ward map starts from the existing model score (the mean DataZone score for the ward's SIMD decile). Future model views add 4, 8, or 12 risk points for Years 1, 2, or 3, capped at 100. These are scenario adjustments; incident forecasts are shown separately as annual counts for each projected year, rather than cumulative totals. These historical projections follow the 2009/10–2022/23 training data and are not refreshed rolling forecasts. Mock mode provides illustrative scores with the same annual scenario controls. Its legacy sample monthly forecasts are not displayed as annual data.
 
 FireSight is a student prototype for exploring prevention planning. Its scores and forecasts have not been validated for operational use and do not determine whether a building is safe.
 

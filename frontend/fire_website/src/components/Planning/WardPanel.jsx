@@ -27,7 +27,7 @@ function Guidance({ ward, dataSource }) {
     <p className="small-copy">Review suggestions alongside local knowledge. They do not prescribe an inspection or establish building safety.</p>
     {!result && <button className="secondary-button" onClick={load} disabled={loading}>{loading ? 'Loading guidance…' : error ? 'Retry guidance' : 'Load guidance'}<Icon name="arrow" size={15}/></button>}
     {error && <p role="alert" className="error-copy">Guidance could not be loaded. Try again.</p>}
-    {result && <><span className="source-tag">{result.source === 'live' ? 'Generated suggestion' : 'Built-in suggestion'} · {dataSource === 'model' ? 'Year 1' : '6-month'} context</span><p className="guidance-copy">{result.text}</p></>}
+    {result && <><span className="source-tag">{result.source === 'live' ? 'Generated suggestion' : 'Built-in suggestion'} · Year 1 context</span><p className="guidance-copy">{result.text}</p></>}
   </section>;
 }
 
@@ -52,10 +52,10 @@ export default function WardPanel({ features, selected, onSelect, onBack, dataSo
           {forecast.lower != null && forecast.upper != null && <p className="small-copy">Indicative range {forecast.lower}–{forecast.upper} · first period only</p>}
           <ForecastChart prediction={p.prediction} dataSource={dataSource}/>
           <p className="small-copy">{dataSource === 'model' ? 'Counts for each projected year, not cumulative totals. Based on 2009/10–2022/23 observations.' : 'Illustrative values from sample incident history, not observed fire statistics.'}</p></>
-          : <p className="empty-note">No forecast is available for this ward.</p>}
+          : <p className="empty-note">{dataSource === 'mock' ? 'Annual fire projections are available in Model mode. Mock provides sample scores only.' : 'No forecast is available for this ward.'}</p>}
       </section>
       <section className="detail-section"><div className="section-heading"><h3>Ward context</h3></div><p className="small-copy">Context supplied with the ward data; these are not measured contributions to the score.</p><ul className="context-list">{(p.drivers || []).map((driver) => <li key={driver}>{driver}</li>)}</ul></section>
-      <Guidance key={`${p.ward_id}-${dataSource}`} ward={p} dataSource={dataSource}/>
+      {dataSource === 'model' && <Guidance key={`${p.ward_id}-${dataSource}`} ward={p} dataSource={dataSource}/>}
     </>;
   }
   return <>
@@ -67,7 +67,7 @@ export default function WardPanel({ features, selected, onSelect, onBack, dataSo
       const p = feature.properties;
       const rank = rankedWards(features).findIndex((f) => f.properties.ward_id === p.ward_id) + 1;
       const forecast = selectForecast(p.prediction, timeFrame, dataSource);
-      return <li key={p.ward_id}><button className="ward-row" onClick={() => onSelect(p.ward_id)} aria-label={`Inspect ${p.ward_name}`}><span className="ward-rank">{String(rank).padStart(2,'0')}</span><span className="ward-row-main"><strong>{p.ward_name}</strong><span>{forecast.value == null ? 'Forecast unavailable' : `${forecast.label}: ${forecast.value} projected incidents`}</span><span className="score-track"><span style={{width:`${p.risk_score}%`,background:scoreColor(p.risk_score)}}/></span></span><span className="row-score" style={{color:scoreColor(p.risk_score)}}>{p.risk_score}<Icon name="arrow" size={13}/></span></button></li>;
+      return <li key={p.ward_id}><button className="ward-row" onClick={() => onSelect(p.ward_id)} aria-label={`Inspect ${p.ward_name}`}><span className="ward-rank">{String(rank).padStart(2,'0')}</span><span className="ward-row-main"><strong>{p.ward_name}</strong><span>{forecast.value == null ? (dataSource === 'mock' ? 'Sample score · annual forecast not provided' : 'Forecast unavailable') : `${forecast.label}: ${forecast.value} projected incidents`}</span><span className="score-track"><span style={{width:`${p.risk_score}%`,background:scoreColor(p.risk_score)}}/></span></span><span className="row-score" style={{color:scoreColor(p.risk_score)}}>{p.risk_score}<Icon name="arrow" size={13}/></span></button></li>;
     })}</ol>}
     <div className="panel-footnote"><Icon name="info" size={16}/><p>A relative planning indicator, not a probability of fire or a building safety rating.</p></div>
   </>;

@@ -7,7 +7,7 @@ test('ward priorities rank the same geographic units as the map and use stable t
   const input = [ward('linn','Linn',26), ward('north','North East',40), ward('govan','Govan',40)];
   assert.deepEqual(rankedWards(input).map((f) => f.properties.ward_id), ['govan','north','linn']);
   assert.equal(input[0].properties.ward_id, 'linn');
-  assert.equal(displayedScore(input[0], 'In 1.5 years'), 38);
+  assert.equal(displayedScore(input[0], 'Year 3'), 38);
   assert.equal(rankedWards(input)[0].properties.risk_score, 40);
 });
 test('ward search supports names and identifiers, and missing scores are not treated as low risk', () => {

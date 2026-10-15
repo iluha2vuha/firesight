@@ -12,7 +12,7 @@ An unchecked item is planned work, not a completed capability.
 ## Next: make results understandable and checkable
 
 - [ ] **Document data provenance.** Record sources, dates, preparation steps, and which values are mock or derived. Verify the complete generation process from its required inputs.
-- [x] **Correct forecast horizon labels.** Model views and explanations describe the three annual projections as Years 1, 2 and 3. Existing CSV/API field names are retained for compatibility; Mock mode keeps its sample month-based units.
+- [x] **Correct forecast horizon labels.** Model views and explanations describe the three annual projections as Years 1, 2 and 3. Existing CSV/API field names are retained for compatibility; Both modes use whole-year controls; sample monthly forecasts are hidden in Mock mode rather than relabelled as annual data.
 - [ ] **Evaluate forecasting.** Define an appropriate time-based evaluation, compare with a simple baseline, and report limitations. Claim accuracy only after measuring it.
 - [ ] **Add focused automated checks.** Cover meaningful API behaviour, missing data, JSON serialization, and key frontend flows; add CI for appropriate checks.
 - [ ] **Review usability.** Verify legends, controls, keyboard access, and layouts at common screen sizes.

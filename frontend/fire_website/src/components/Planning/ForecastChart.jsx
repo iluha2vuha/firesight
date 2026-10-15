@@ -1,8 +1,7 @@
-import { selectForecast } from '../../utils/forecast';
+import { FORECAST_PERIODS, selectForecast } from '../../utils/forecast';
 
 export default function ForecastChart({ prediction, dataSource }) {
-  const periods = ['In 6 months', 'In 1 year', 'In 1.5 years'];
-  const forecasts = periods.map((period) => selectForecast(prediction, period, dataSource));
+  const forecasts = FORECAST_PERIODS.map((period) => selectForecast(prediction, period, dataSource));
   if (forecasts.some((forecast) => forecast.value == null)) {
     return <p className="empty-note">Forecast data is unavailable for this ward.</p>;
   }

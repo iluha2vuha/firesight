@@ -3,10 +3,9 @@ import './App.css';
 import RiskMap from './components/Map/RiskMap';
 import WardPanel from './components/Planning/WardPanel';
 import Icon from './components/Planning/Icon';
-import { timeframeLabel } from './utils/forecast';
+import { TIME_FRAME_OPTIONS } from './utils/forecast';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-const PERIODS = ['Current', 'In 6 months', 'In 1 year', 'In 1.5 years'];
 
 function useRemoteData(path, attempt) {
   const [resource, setResource] = useState({ path: null, status: 'loading', data: null });
@@ -38,14 +37,15 @@ function MethodPanel() {
     <section className="detail-section"><span className="source-tag">SIMD 2020</span><h3>How ward scores are derived</h3><p className="small-copy">DataZone scores combine deprivation, overcrowding, health vulnerability, central heating and crime indicators. The ward map uses the mean zone score for the ward’s assigned deprivation decile. This is a proxy, not a spatial aggregation of every zone inside a ward.</p></section>
     <section className="detail-section"><span className="source-tag">2009/10–2022/23</span><h3>Historical fire projections</h3><p className="small-copy">The model fits a recency-weighted linear trend to 14 annual observations of dwelling fires. Year 1, 2 and 3 are separate annual counts after the training period, not cumulative totals or a forecast trained on today’s data.</p><p className="small-copy">The displayed range is an indicative residual-based band for Year 1. Forecast accuracy and uncertainty coverage have not been validated.</p></section>
     <section className="detail-section"><h3>Scenario adjustments</h3><p className="small-copy">Selecting later periods adds 4, 8 or 12 points to the current score, capped at 100. These fixed adjustments illustrate planning scenarios; they are not predictions learned by the model. The ward ranking always uses current scores.</p></section>
-    <section className="detail-section"><h3>Sample layers</h3><p className="small-copy">Mock mode uses illustrative ward data. City-centre premises are examples with authored scores and inspection priorities, not verified live risk records. They are hidden by default and remain examples in either data mode.</p></section>
+    <section className="detail-section"><h3>Sample layers</h3><p className="small-copy">Mock mode uses illustrative ward scores with the same annual scenario controls; it does not supply annual fire forecasts. City-centre premises are examples with authored scores and inspection priorities, not verified live risk records. They are hidden by default and remain examples in either data mode.</p></section>
     <div className="panel-footnote"><Icon name="info"/><p>Student prototype. Not validated for operational fire-safety decisions.</p></div>
   </>;
 }
 
 export default function App() {
   const [dataSource, setDataSource] = useState('model');
-  const [timeFrame, setTimeFrame] = useState('Current');
+  const [selectedPeriod, setTimeFrame] = useState('Current');
+  const timeFrame = TIME_FRAME_OPTIONS.includes(selectedPeriod) ? selectedPeriod : 'Current';
   const [attempt, setAttempt] = useState(0);
   const [showWards, setShowWards] = useState(true);
   const [showPremises, setShowPremises] = useState(false);
@@ -94,7 +94,7 @@ export default function App() {
         <label className="layer-filter"><input type="checkbox" checked={showWards} onChange={(e) => setShowWards(e.target.checked)}/><span>Ward scores</span></label>
         <label className="layer-filter"><input type="checkbox" checked={showPremises} onChange={(e) => setShowPremises(e.target.checked)}/><span>City-centre premises</span><span className="sample-tag">Sample</span></label>
         <div className="filter-spacer"/>
-        <label className="period-filter"><span>Projection</span><select aria-label="Projection period" value={timeFrame} onChange={(e) => setTimeFrame(e.target.value)}>{PERIODS.map((period) => <option key={period} value={period}>{timeframeLabel(period, dataSource)}</option>)}</select></label>
+        <label className="period-filter"><span>Projection</span><select aria-label="Projection period" value={timeFrame} onChange={(e) => setTimeFrame(e.target.value)}>{TIME_FRAME_OPTIONS.map((period) => <option key={period} value={period}>{period}</option>)}</select></label>
       </div>
       <div className="workspace">
         <section className="map-stage" aria-label="Glasgow ward map">
@@ -109,7 +109,7 @@ export default function App() {
           {panel === 'method' && <MethodPanel/>}
           {panel === 'settings' && <>
             <div className="panel-heading"><div><span className="eyebrow">WORKSPACE</span><h2>Settings</h2></div></div>
-            <section className="detail-section"><h3>Data source</h3><div className="segmented-control" role="group" aria-label="Data source"><button aria-pressed={dataSource === 'model'} onClick={() => setDataSource('model')} disabled={status.status === 'ready' && !status.data?.model_loaded}>Model</button><button aria-pressed={dataSource === 'mock'} onClick={() => setDataSource('mock')}>Mock</button></div><p className="small-copy">Model uses historical statistics and derived scores. Mock uses sample ward scores and incident counts.</p>{status.status === 'error' ? <><p className="error-copy" role="alert">Backend connection unavailable.</p><button className="secondary-button" onClick={retry}>Retry connection</button></> : status.status === 'loading' ? <p className="small-copy" role="status">Checking model availability…</p> : <p className="availability"><span className="status-dot"/>{status.data?.model_loaded ? 'Model output available' : 'Model output not loaded'}</p>}</section>
+            <section className="detail-section"><h3>Data source</h3><div className="segmented-control" role="group" aria-label="Data source"><button aria-pressed={dataSource === 'model'} onClick={() => setDataSource('model')} disabled={status.status === 'ready' && !status.data?.model_loaded}>Model</button><button aria-pressed={dataSource === 'mock'} onClick={() => setDataSource('mock')}>Mock</button></div><p className="small-copy">Model uses historical statistics and derived scores. Mock uses sample ward scores. Annual fire projections are available in Model mode.</p>{status.status === 'error' ? <><p className="error-copy" role="alert">Backend connection unavailable.</p><button className="secondary-button" onClick={retry}>Retry connection</button></> : status.status === 'loading' ? <p className="small-copy" role="status">Checking model availability…</p> : <p className="availability"><span className="status-dot"/>{status.data?.model_loaded ? 'Model output available' : 'Model output not loaded'}</p>}</section>
             <section className="detail-section"><h3>Appearance</h3><div className="segmented-control" role="group" aria-label="Appearance"><button aria-pressed={nightMode} onClick={() => setTheme(true)}><Icon name="moon" size={16}/>Dark</button><button aria-pressed={!nightMode} onClick={() => setTheme(false)}><Icon name="sun" size={16}/>Light</button></div><p className="small-copy">Your preference is saved on this device.</p></section>
             <section className="detail-section"><h3>Map layers</h3><p className="small-copy">Use the filter bar above the map to show ward scores and sample city-centre premises, or change the projection period.</p><p className="small-copy">{premisesResource.status === 'ready' ? `${premises.length} higher-score example premises available.` : 'Example premises data is not currently available.'}</p></section>
           </>}

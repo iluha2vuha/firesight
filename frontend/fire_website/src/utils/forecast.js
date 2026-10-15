@@ -1,37 +1,22 @@
-// These values are also used by the existing mock-data controls.
-const PERIOD_BY_TIMEFRAME = {
-  Current: 1,
-  'In 6 months': 1,
-  'In 1 year': 2,
-  'In 1.5 years': 3,
-};
-
+export const FORECAST_PERIODS = ['Year 1', 'Year 2', 'Year 3'];
+export const TIME_FRAME_OPTIONS = ['Current', ...FORECAST_PERIODS];
+const periodNumber = (timeFrame) => Math.max(1, FORECAST_PERIODS.indexOf(timeFrame) + 1);
 const finiteOrNull = (value) => Number.isFinite(value) ? value : null;
 
-export const timeframeLabel = (timeFrame, dataSource = 'mock') => {
-  if (timeFrame === 'Current' || dataSource !== 'model') return timeFrame;
-  return `Year ${PERIOD_BY_TIMEFRAME[timeFrame] ?? 1}`;
-};
+export const timeframeLabel = (timeFrame) => TIME_FRAME_OPTIONS.includes(timeFrame) ? timeFrame : 'Current';
+export const timeframeMonths = (timeFrame) => timeFrame === 'Current' ? 1 : periodNumber(timeFrame) * 12;
 
-export const timeframeMonths = (timeFrame, dataSource = 'mock') => (
-  timeFrame === 'Current' ? 1
-    : (PERIOD_BY_TIMEFRAME[timeFrame] ?? 1) * (dataSource === 'model' ? 12 : 6)
-);
-
-export const selectForecast = (prediction = {}, timeFrame = 'Current', dataSource = 'mock') => {
-  const period = PERIOD_BY_TIMEFRAME[timeFrame] ?? 1;
-  const isAnnual = dataSource === 'model';
-  const months = period * (isAnnual ? 12 : 6);
-
+export const selectForecast = (prediction = {}, timeFrame = 'Current', dataSource = 'model') => {
+  const period = periodNumber(timeFrame);
+  const isModel = dataSource === 'model';
   return {
-    months,
-    label: isAnnual ? `Year ${period}` : `${months}-month`,
-    // Model CSV/API field names are legacy: 6mo/12mo/18mo hold the next three
-    // annual projections. Keep compatibility while displaying their actual units.
-    value: finiteOrNull(prediction?.[`forecast_${period * 6}mo`]),
-    // The interval and trend describe only the first projected period.
-    lower: period === 1 ? finiteOrNull(prediction?.forecast_lower) : null,
-    upper: period === 1 ? finiteOrNull(prediction?.forecast_upper) : null,
-    trend: period === 1 ? finiteOrNull(prediction?.trend_pct) : null,
+    months: period * 12,
+    label: `Year ${period}`,
+    // Model's legacy API names hold annual values. Mock's legacy fields really
+    // are sample month-based values, so they must not be shown as annual counts.
+    value: finiteOrNull(prediction?.[isModel ? `forecast_${period * 6}mo` : `forecast_year_${period}`]),
+    lower: isModel && period === 1 ? finiteOrNull(prediction?.forecast_lower) : null,
+    upper: isModel && period === 1 ? finiteOrNull(prediction?.forecast_upper) : null,
+    trend: isModel && period === 1 ? finiteOrNull(prediction?.trend_pct) : null,
   };
 };
