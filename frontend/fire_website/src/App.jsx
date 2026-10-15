@@ -29,7 +29,6 @@ export default function App() {
   const wardsButtonRef = useRef(null);
   const [selectedId, setSelectedId] = useState(null);
   const [overviewRequest, setOverviewRequest] = useState(0);
-  const [mapScope, setMapScope] = useState('wards');
   const [search, setSearch] = useState('');
   const panelRef = useRef(null);
   const [nightMode, setNightMode] = useState(() => {
@@ -44,7 +43,6 @@ export default function App() {
   }, []);
 
   const showAllWards = () => {
-    setMapScope('wards');
     setSelectedId(null);
     setSearch('');
     setShowWards(true);
@@ -97,14 +95,8 @@ export default function App() {
   const premises = premisesValid ? premisesResource.data : [];
   const premisesStatus = premisesResource.status === 'ready' && !premisesValid ? 'error' : premisesResource.status;
   const retry = () => setAttempt((value) => value + 1);
-  const showScotland = () => {
-    setMapScope('scotland');
-    setPanelOpen(false);
-    setOverviewRequest((request) => request + 1);
-  };
   const chooseWard = (id) => {
     returnFocusRef.current = document.activeElement;
-    setMapScope('wards');
     setSelectedId(id);
     setShowWards(true);
     setPanel('wards');
@@ -135,7 +127,7 @@ export default function App() {
           <div ref={dockRef} className="filter-dock" role="group" aria-label="Map filters">
             <div className="dock-state"><span>Data</span><strong>{dataSource === 'mock' ? 'Mock' : 'Model'}</strong></div>
             <label className="dock-toggle">
-              <input type="checkbox" checked={showWards} onChange={(e) => { setShowWards(e.target.checked); if (e.target.checked) { setMapScope('wards'); setOverviewRequest((request) => request + 1); } }}/>
+              <input type="checkbox" checked={showWards} onChange={(e) => { setShowWards(e.target.checked); if (e.target.checked) setOverviewRequest((request) => request + 1); }}/>
               <span className="dock-icon dock-icon-wards"><Icon name="map" size={20}/></span>
               <span>Ward scores</span>
             </label>
@@ -159,7 +151,7 @@ export default function App() {
           </div>
         </div>
         <section className="map-stage" aria-label="Glasgow ward map">
-          <RiskMap mapScope={mapScope} onScotland={showScotland} overviewRequest={overviewRequest} onOverview={showAllWards} panelOpen={panelOpen} dockHeight={dockHeight} features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} showEvents={showEvents} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
+          <RiskMap overviewRequest={overviewRequest} panelOpen={panelOpen} dockHeight={dockHeight} features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} showEvents={showEvents} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
           <div className="map-notices">
             {(wardResource.status === 'loading' || wardError) && <div className="map-notice" role={wardError ? 'alert' : 'status'}>
               {wardError ? <>

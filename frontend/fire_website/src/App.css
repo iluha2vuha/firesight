@@ -152,7 +152,6 @@ summary { cursor: pointer; font-size: 12px; font-weight: 500; line-height: 1.6; 
   .panel-content { padding:22px 18px; }
   .detail-title h2 { font-size:20px; }
   .map-notices { top:calc(var(--dock-height) + 24px); right:8px; }
-  .workspace.sidebar-open .map-tools { visibility:hidden; }
 }
 @media (pointer:coarse) { .secondary-button, .back-button, .segmented-control button, .period-options button, .sidebar-close, summary { min-height:44px; } .sidebar-close { width:44px; } .search-field button { min-width:36px; min-height:40px; } }
 @media (max-width:360px) {
