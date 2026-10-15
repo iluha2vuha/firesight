@@ -120,43 +120,6 @@ The hackathon prototype was built collaboratively by Team 7. The original commit
 - Developed FastAPI endpoints serving risk scores, forecasts, and GeoJSON for 23 Glasgow wards to the interactive map.
 - Processed model outputs for the API and fixed non-finite values that caused JSON serialization failures.
 
-## Portfolio improvements
-
-The team baseline is preserved at commit `c85ae93` under the [`team-baseline` tag](https://github.com/iluha2vuha/firesight/tree/team-baseline). The portfolio edition builds on this snapshot, with the original team repository retained separately.
-
-The improvements on `main` include:
-
-- Restored OpenStreetMap imagery with light/dark styling and configurable tile providers.
-- Corrected forecast coverage to exactly match all 23 Glasgow wards, including North East, and fixed identifiers for 746 DataZones.
-- Unified annual timeframe controls and separated model incident projections from fixed score scenarios.
-- Rebuilt the dashboard around a searchable ward list, map selection, a compact filter dock and dismissible panels.
-- Separated demonstration premises and events from Model outputs.
-- Added validated API responses, cancellation, request deadlines, retries and protection against stale data.
-- Split template suggestions from live OpenAI generation, added source/ward/period checks, and fixed GPT-6 Luna request compatibility.
-- Added regression tests and checked the main workflow, themes, keyboard controls and responsive layouts in the browser.
-
-Changes are developed on feature branches and merged through pull requests. API credentials are configured locally and excluded from Git.
-
-## Checks
-
-From the repository root, with the Python environment active:
-
-```bash
-python -m unittest discover -s backend -p 'test_*.py'
-```
-
-From `frontend/fire_website`:
-
-```bash
-npm test
-npm run lint
-npm run build
-```
-
-The suites contain 18 backend tests and 15 frontend tests. Backend suggestion tests mock OpenAI and require no API key. Live GPT-6 Luna generation has also been checked separately. The commands above run all automated checks locally.
-
-See the [roadmap](docs/ROADMAP.md) for future enhancements.
-
 ## Repository layout
 
 ```text
