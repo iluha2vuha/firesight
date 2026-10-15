@@ -41,7 +41,7 @@ const RiskMap = ({
         />
 
         <RiskLayer timeFrame={timeFrame} hoveredRiskBand={hoveredRiskBand} dataSource={dataSource} />
-        {showPremises && <PremisesLayer timeFrame={timeFrame} dataSource={dataSource} focus="city-centre" riskBandFilter="high" />}
+        {showPremises && <PremisesLayer focus="city-centre" riskBandFilter="high" />}
         <EventLayer timeFrame={timeFrame} dataSource={dataSource} />
       </MapContainer>
     </div>

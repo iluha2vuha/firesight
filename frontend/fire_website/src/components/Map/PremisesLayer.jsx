@@ -1,10 +1,8 @@
 import { Marker, Pane, Popup } from 'react-leaflet';
 import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
-import { timeframeMonths } from '../../utils/forecast';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-
 
 const premisesIcon = L.divIcon({
   className: 'premises-marker-icon-root',
@@ -14,23 +12,13 @@ const premisesIcon = L.divIcon({
   popupAnchor: [0, -10]
 });
 
-const parsePressureMonths = (futurePressure) => {
-  const timeframe = futurePressure?.timeframe;
-  if (!timeframe || typeof timeframe !== 'string') return null;
-  const match = timeframe.match(/(\d+)\s*month/i);
-  if (match) return Number(match[1]);
-  const yearMatch = timeframe.match(/(\d+)\s*year/i);
-  if (yearMatch) return Number(yearMatch[1]) * 12;
-  return null;
-};
-
 const isValidLatLng = (lat, lng) =>
   Number.isFinite(lat) &&
   Number.isFinite(lng) &&
   Math.abs(lat) <= 90 &&
   Math.abs(lng) <= 180;
 
-const PremisesLayer = ({ timeFrame = 'Current', dataSource = 'mock', focus = 'city-centre', riskBandFilter = 'high' }) => {
+const PremisesLayer = ({ focus = 'city-centre', riskBandFilter = 'high' }) => {
   const [premises, setPremises] = useState([]);
   const [aiById, setAiById] = useState({});
   const [aiLoadingById, setAiLoadingById] = useState({});
@@ -58,20 +46,14 @@ const PremisesLayer = ({ timeFrame = 'Current', dataSource = 'mock', focus = 'ci
   }, [focus]);
 
   const filteredPremises = useMemo(() => {
-    const months = timeframeMonths(timeFrame, dataSource);
-
+    // Future pressure describes demand at existing premises, not when they appear.
     return premises
       .filter((p) => isValidLatLng(Number(p.lat), Number(p.lng)))
       .filter((p) => {
         if (!riskBandFilter) return true;
         return String(p.risk_band ?? '').toLowerCase() === String(riskBandFilter).toLowerCase();
-      })
-      .filter((p) => {
-        const pressureMonths = parsePressureMonths(p.future_pressure);
-        if (!pressureMonths) return true;
-        return pressureMonths <= months;
       });
-  }, [premises, riskBandFilter, timeFrame, dataSource]);
+  }, [premises, riskBandFilter]);
 
   const explainPremises = async (premisesId) => {
     if (!premisesId) return;
