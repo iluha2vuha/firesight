@@ -10,6 +10,8 @@ function App() {
   const [timeFrame, setTimeFrame] = useState(TIME_FRAME_OPTIONS[0]);
   const [dataSource, setDataSource] = useState('mock');
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [backendStatus, setBackendStatus] = useState('loading');
+  const [statusAttempt, setStatusAttempt] = useState(0);
   const [showPremises, setShowPremises] = useState(true);
   const [nightMode, setNightMode] = useState(() => {
     try {
@@ -21,11 +23,34 @@ function App() {
   });
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/status`)
-      .then((r) => r.json())
-      .then((data) => setModelLoaded(data.model_loaded === true))
-      .catch(() => setModelLoaded(false));
-  }, []);
+    const controller = new AbortController();
+    let cancelled = false;
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    const checkStatus = async () => {
+      setBackendStatus('loading');
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/status`, { signal: controller.signal });
+        if (!response.ok) throw new Error('Backend unavailable');
+        const data = await response.json();
+        if (cancelled) return;
+        setModelLoaded(data.model_loaded === true);
+        setBackendStatus('ready');
+      } catch {
+        if (!cancelled) {
+          setModelLoaded(false);
+          setBackendStatus('error');
+        }
+      } finally {
+        clearTimeout(timeout);
+      }
+    };
+    checkStatus();
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [statusAttempt]);
 
   return (
     <div className={`app-container${nightMode ? ' night-mode' : ''}`}>
@@ -92,12 +117,17 @@ function App() {
                 className={`ds-btn ${dataSource === 'model' ? 'ds-btn--active' : ''}`}
                 onClick={() => setDataSource('model')}
                 disabled={!modelLoaded}
-                title={!modelLoaded ? 'Run the data pipeline first' : 'Switch to linear model output'}
+                title={backendStatus === 'error' ? 'Backend unavailable — retry the connection' : backendStatus === 'loading' ? 'Checking model availability' : !modelLoaded ? 'Run the data pipeline first' : 'Switch to model output'}
               >
                 Model
               </button>
             </div>
           </div>
+          {backendStatus === 'error' && (
+            <button className="ds-btn" onClick={() => setStatusAttempt((value) => value + 1)}>
+              Retry connection
+            </button>
+          )}
           <span className="app-header-badge">
             {dataSource === 'model' ? 'Linear model' : 'Mock data'}
           </span>
@@ -132,6 +162,7 @@ function App() {
         </div>
 
         <RiskMap
+          key={statusAttempt}
           timeFrame={timeFrame}
           dataSource={dataSource}
           nightMode={nightMode}
@@ -139,7 +170,7 @@ function App() {
         />
 
         <div className={`top-risk-panel${nightMode ? ' night-mode' : ''}`}>
-          <TopRiskAreas dataSource={dataSource} timeFrame={timeFrame} />
+          <TopRiskAreas dataSource={dataSource} timeFrame={timeFrame} refreshKey={statusAttempt} />
         </div>
       </main>
     </div>

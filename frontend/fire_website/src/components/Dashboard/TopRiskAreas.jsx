@@ -5,23 +5,33 @@ import './TopRiskAreas.css';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
-const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current' }) => {
+const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current', refreshKey = 0 }) => {
   const [areas, setAreas]         = useState([]);
   const [aiById, setAiById]       = useState({});
   const [loadingById, setLoadingById] = useState({});
+  const [status, setStatus] = useState('loading');
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    setAreas([]);
-    setAiById({});
+    const controller = new AbortController();
+    let cancelled = false;
+    const timeout = setTimeout(() => controller.abort(), 10000);
     const fetchAreas = async () => {
+      setStatus('loading');
+      setAreas([]);
+      setAiById({});
+      setLoadingById({});
       try {
         if (dataSource === 'model') {
-          const res  = await fetch(`${BACKEND_URL}/api/zones/top?n=5`);
+          const res  = await fetch(`${BACKEND_URL}/api/zones/top?n=5`, { signal: controller.signal });
+          if (!res.ok) throw new Error('Could not load rankings');
           const data = await res.json();
+          if (!Array.isArray(data)) throw new Error('Invalid rankings response');
+          if (cancelled) return;
           setAreas(data.map((z) => ({
             id:       z.zoneid,
             mode:     'zone',
-            name:     z.zonename || z.zoneid,
+            name:     `Data zone ${z.zoneid}`,
             risk:     z.riskscore ?? 0,
             drivers:  Array.isArray(z.drivers) ? z.drivers : [],
             prediction: {
@@ -32,8 +42,11 @@ const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current' }) => {
             },
           })));
         } else {
-          const res  = await fetch(`${BACKEND_URL}/api/strategic/wards`);
+          const res  = await fetch(`${BACKEND_URL}/api/strategic/wards`, { signal: controller.signal });
+          if (!res.ok) throw new Error('Could not load rankings');
           const data = await res.json();
+          if (!Array.isArray(data)) throw new Error('Invalid rankings response');
+          if (cancelled) return;
           setAreas(
             data
               .sort((a, b) => (b.risk_score ?? 0) - (a.risk_score ?? 0))
@@ -48,12 +61,23 @@ const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current' }) => {
               }))
           );
         }
+        if (!cancelled) setStatus('ready');
       } catch {
-        setAreas([]);
+        if (!cancelled) {
+          setAreas([]);
+          setStatus('error');
+        }
+      } finally {
+        clearTimeout(timeout);
       }
     };
     fetchAreas();
-  }, [dataSource]);
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [dataSource, attempt, refreshKey]);
 
   const fetchAI = async (id, mode) => {
     setLoadingById((p) => ({ ...p, [id]: true }));
@@ -82,8 +106,17 @@ const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current' }) => {
       <p className="top-areas-context">
         Ranked by current risk · {selectForecast(null, timeFrame).months}-month outlook
       </p>
-      {areas.length === 0 ? (
-        <p className="top-areas-loading">Loading…</p>
+      {status === 'loading' ? (
+        <p className="top-areas-loading" role="status">Loading…</p>
+      ) : status === 'error' ? (
+        <div role="alert">
+          <p className="top-areas-loading">Could not load risk rankings. Check that the backend is running.</p>
+          <button className="top-area-ai-btn" onClick={() => setAttempt((value) => value + 1)}>
+            Retry rankings
+          </button>
+        </div>
+      ) : areas.length === 0 ? (
+        <p className="top-areas-loading" role="status">No risk areas available.</p>
       ) : (
         <ul>
           {areas.map((a) => {
