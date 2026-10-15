@@ -16,6 +16,7 @@ export default function App() {
   const timeFrame = TIME_FRAME_OPTIONS.includes(selectedPeriod) ? selectedPeriod : 'Current';
   const [attempt, setAttempt] = useState(0);
   const [showWards, setShowWards] = useState(true);
+  const [highlightedBand, setHighlightedBand] = useState(null);
   const [premisesEnabled, setShowPremises] = useState(false);
   const showPremises = dataSource === 'mock' && premisesEnabled;
   const [eventsEnabled, setShowEvents] = useState(false);
@@ -146,11 +147,11 @@ export default function App() {
                 {TIME_FRAME_OPTIONS.map((period) => <button key={period} aria-pressed={timeFrame === period} onClick={() => setTimeFrame(period)}>{period}</button>)}
               </div>
             </div>
-            {((showWards && features.length > 0) || (showPremises && premises.length > 0) || showEvents) && <MapLegend timeFrame={timeFrame} showWards={showWards && features.length > 0} showPremises={showPremises && premises.length > 0} showEvents={showEvents}/>}
+            {((showWards && features.length > 0) || (showPremises && premises.length > 0) || showEvents) && <MapLegend timeFrame={timeFrame} showWards={showWards && features.length > 0} showPremises={showPremises && premises.length > 0} showEvents={showEvents} onHighlightBand={setHighlightedBand}/>}
           </div>
         </div>
         <section className="map-stage" aria-label="Glasgow ward map">
-          <RiskMap overviewRequest={overviewRequest} panelOpen={panelOpen} dockHeight={dockHeight} features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} showEvents={showEvents} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
+          <RiskMap overviewRequest={overviewRequest} panelOpen={panelOpen} dockHeight={dockHeight} features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} showEvents={showEvents} premises={premises} selectedId={selectedId} onSelect={chooseWard} highlightedBand={highlightedBand}/>
           <div className="map-notices">
             {(wardResource.status === 'loading' || wardError) && <div className="map-notice" role={wardError ? 'alert' : 'status'}>
               {wardError ? <>

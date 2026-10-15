@@ -45,11 +45,11 @@ function MapViewport({ features, panelOpen, dockHeight, overviewRequest }) {
   return null;
 }
 
-export default function RiskMap({ overviewRequest, panelOpen, dockHeight, features, timeFrame, nightMode, showWards, showPremises, showEvents, premises, selectedId, onSelect }) {
+export default function RiskMap({ overviewRequest, panelOpen, dockHeight, features, timeFrame, nightMode, showWards, showPremises, showEvents, premises, selectedId, onSelect, highlightedBand }) {
   return <div className={`risk-map-container${nightMode ? ' night-mode' : ''}`}>
     <MapContainer bounds={GLASGOW_BOUNDS} className="leaflet-map" zoomControl={false} maxBounds={SCOTLAND_BOUNDS} maxBoundsViscosity={1} minZoom={5}>
       <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} maxZoom={19} noWrap referrerPolicy="strict-origin-when-cross-origin"/>
-      {showWards && <RiskLayer features={features} timeFrame={timeFrame} selectedId={selectedId} onSelect={onSelect}/>}
+      {showWards && <RiskLayer features={features} timeFrame={timeFrame} selectedId={selectedId} onSelect={onSelect} highlightedBand={highlightedBand}/>}
       {showPremises && <PremisesLayer premises={premises} dockHeight={dockHeight}/>}
       {showEvents && <EventLayer dockHeight={dockHeight}/>}
       <MapViewport features={features} panelOpen={panelOpen} dockHeight={dockHeight} overviewRequest={overviewRequest}/>
