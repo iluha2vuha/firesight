@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import PremisesLayer from './PremisesLayer';
@@ -15,6 +15,8 @@ const GLASGOW_BOUNDS = [[55.765, -4.43], [55.928, -4.065]];
 
 function MapViewport({ features, panelOpen, dockHeight, overviewRequest }) {
   const map = useMap();
+  const fittedWards = useRef(false);
+  const previousOverview = useRef(overviewRequest);
   const viewOptions = useCallback(() => {
     const wide = window.matchMedia('(min-width:801px)').matches;
     const sidebarWidth = window.matchMedia('(min-width:1650px)').matches ? 390 : 350;
@@ -31,16 +33,22 @@ function MapViewport({ features, panelOpen, dockHeight, overviewRequest }) {
 
   useEffect(() => {
     const resize = () => {
-      map.invalidateSize();
+      map.invalidateSize({ pan:false });
       map.setMinZoom(Math.max(5, map.getBoundsZoom(SCOTLAND_BOUNDS)));
-      fitView();
     };
     const observer = new ResizeObserver(resize);
     observer.observe(map.getContainer());
     return () => observer.disconnect();
-  }, [map, fitView]);
+  }, [map]);
 
-  useEffect(() => { fitView(); }, [fitView, overviewRequest]);
+  useEffect(() => {
+    const overviewRequested = previousOverview.current !== overviewRequest;
+    previousOverview.current = overviewRequest;
+    if (features.length && (!fittedWards.current || overviewRequested)) {
+      fitView();
+      fittedWards.current = true;
+    }
+  }, [features, fitView, overviewRequest]);
 
   return null;
 }

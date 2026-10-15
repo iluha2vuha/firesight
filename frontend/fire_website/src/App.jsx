@@ -102,7 +102,6 @@ export default function App() {
     setShowWards(true);
     setPanel('wards');
     setPanelOpen(true);
-    setOverviewRequest((request) => request + 1);
   };
   const setTheme = (dark) => {
     setNightMode(dark);
@@ -127,7 +126,7 @@ export default function App() {
         <div className="dock-area">
           <div ref={dockRef} className="filter-dock" role="group" aria-label="Map filters">
             <label className="dock-toggle">
-              <input type="checkbox" checked={showWards} onChange={(e) => { setShowWards(e.target.checked); if (e.target.checked) setOverviewRequest((request) => request + 1); }}/>
+              <input type="checkbox" checked={showWards} onChange={(e) => setShowWards(e.target.checked)}/>
               <span className="dock-icon dock-icon-wards"><Icon name="map" size={20}/></span>
               <span>Ward scores</span>
             </label>
