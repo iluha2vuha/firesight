@@ -37,6 +37,9 @@ class ModelDataContractTests(unittest.TestCase):
         self.assertEqual(payload['forecast_year_2'], 23)
         self.assertEqual(payload['forecast_year_3'], 22)
         self.assertNotIn('forecast_6mo', payload)
+        self.assertEqual(payload['n_years'], 14)
+        self.assertNotIn('accidental dwelling', payload['data_basis'])
+        self.assertIn('indicative residual-based band', payload['data_basis'])
 
     def test_model_responses_are_json_serializable(self):
         json.dumps(main.get_strategic_wards_geojson(source='model'), allow_nan=False)
