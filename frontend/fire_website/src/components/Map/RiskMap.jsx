@@ -1,49 +1,66 @@
-import { useState } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
-import EventLayer from './EventLayer';
-import MapLegend from './MapLegend';
+import { useCallback, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import PremisesLayer from './PremisesLayer';
+import EventLayer from './EventLayer';
 import RiskLayer from './RiskLayer';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 
-const RiskMap = ({
-  timeFrame,
-  dataSource = 'mock',
-  nightMode = false,
-  showPremises = true,
-}) => {
-  const [hoveredRiskBand, setHoveredRiskBand] = useState(null);
-  const glasgowCenter = [55.8642, -4.2518];
+const TILE_URL = import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTRIBUTION = import.meta.env.VITE_MAP_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+// Approximate navigation extent; ward-data coverage remains Glasgow.
+const SCOTLAND_BOUNDS = [[54.5, -8.8], [61.1, -0.4]];
+const GLASGOW_BOUNDS = [[55.765, -4.43], [55.928, -4.065]];
 
-  return (
-    <div className={`risk-map-container ${nightMode ? 'night-mode' : ''}`}>
-      <MapLegend
-        hoveredRiskBand={hoveredRiskBand}
-        onRiskBandHover={setHoveredRiskBand}
-      />
+function MapViewport({ features, panelOpen, dockHeight, overviewRequest }) {
+  const map = useMap();
+  const fittedWards = useRef(false);
+  const previousOverview = useRef(overviewRequest);
+  const viewOptions = useCallback(() => {
+    const wide = window.matchMedia('(min-width:801px)').matches;
+    const sidebarWidth = window.matchMedia('(min-width:1650px)').matches ? 390 : 350;
+    return {
+      paddingTopLeft:[panelOpen && wide ? sidebarWidth + 48 : 24, dockHeight + 36],
+      paddingBottomRight:[24, 40], animate:false,
+    };
+  }, [panelOpen, dockHeight]);
+  const fitView = useCallback(() => {
+    const collection = { type:'FeatureCollection', features };
+    const bounds = features.length ? L.geoJSON(collection).getBounds() : L.latLngBounds(GLASGOW_BOUNDS);
+    map.fitBounds(bounds, { ...viewOptions(), maxZoom:11 });
+  }, [map, features, viewOptions]);
 
-      <MapContainer
-        center={glasgowCenter}
-        zoom={12}
-        className="risk-map-container"
-        zoomControl={false}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url={
-            nightMode
-              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-              : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-          }
-        />
+  useEffect(() => {
+    const resize = () => {
+      map.invalidateSize({ pan:false });
+      map.setMinZoom(Math.max(5, map.getBoundsZoom(SCOTLAND_BOUNDS)));
+    };
+    const observer = new ResizeObserver(resize);
+    observer.observe(map.getContainer());
+    return () => observer.disconnect();
+  }, [map]);
 
-        <RiskLayer timeFrame={timeFrame} hoveredRiskBand={hoveredRiskBand} dataSource={dataSource} />
-        {showPremises && <PremisesLayer timeFrame={timeFrame} focus="city-centre" riskBandFilter="high" />}
-        <EventLayer timeFrame={timeFrame} />
-      </MapContainer>
-    </div>
-  );
-};
+  useEffect(() => {
+    const overviewRequested = previousOverview.current !== overviewRequest;
+    previousOverview.current = overviewRequest;
+    if (features.length && (!fittedWards.current || overviewRequested)) {
+      fitView();
+      fittedWards.current = true;
+    }
+  }, [features, fitView, overviewRequest]);
 
-export default RiskMap;
+  return null;
+}
+
+export default function RiskMap({ overviewRequest, panelOpen, dockHeight, features, timeFrame, nightMode, showWards, showPremises, showEvents, premises, selectedId, onSelect, highlightedBand }) {
+  return <div className={`risk-map-container${nightMode ? ' night-mode' : ''}`}>
+    <MapContainer bounds={GLASGOW_BOUNDS} className="leaflet-map" zoomControl={false} maxBounds={SCOTLAND_BOUNDS} maxBoundsViscosity={1} minZoom={5}>
+      <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} maxZoom={19} noWrap referrerPolicy="strict-origin-when-cross-origin"/>
+      {showWards && <RiskLayer features={features} timeFrame={timeFrame} selectedId={selectedId} onSelect={onSelect} highlightedBand={highlightedBand}/>}
+      {showPremises && <PremisesLayer premises={premises} dockHeight={dockHeight}/>}
+      {showEvents && <EventLayer dockHeight={dockHeight}/>}
+      <MapViewport features={features} panelOpen={panelOpen} dockHeight={dockHeight} overviewRequest={overviewRequest}/>
+    </MapContainer>
+  </div>;
+}

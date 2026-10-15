@@ -8,14 +8,25 @@ This repository is Illia Zakharov's personal continuation of the [original team 
 
 ## Features
 
-- **Interactive risk map:** explore risk indicators across 23 Glasgow wards, with ranked areas and supporting risk drivers.
-- **Premises overlay:** view prototype City Centre premises profiles and inspection priorities.
-- **Forecast views:** compare current indicators with 6-, 12-, and 18-month views.
-- **Mock and model modes:** explore sample data or generated DataZone scores and ward forecasts.
-- **Risk explanations:** view prevention recommendations, with optional OpenAI-generated explanations and a built-in fallback.
-- **Day and night views:** switch the dashboard and map styling.
+- **Ward priorities:** search and rank Glasgow's 23 wards, select one from the list or map, and inspect its score and annual projections.
+- **Map controls:** a compact floating dock groups ward scores, optional example layers, Current / Year 1–3 and the score legend. Hover or focus a legend category to highlight matching wards.
+- **Map navigation:** ward selection, source changes and panels preserve your zoom and position. Wards / All wards returns to the Glasgow overview. Navigation is bounded to an approximate Scotland extent; data coverage remains Glasgow.
+- **Workspace settings:** start in Mock, switch to Model in Settings, and choose dark or light appearance. The sidebar closes with × or Escape; Data and Settings sit at the bottom of the navigation rail.
+- **Mock examples:** independently show 10 high-risk premises and four archived event examples. Both layers are hidden by default and excluded from Model mode.
+- **Planning suggestions:** Mock returns written examples. Model generates suggestions for the selected ward and timeframe through OpenAI, with visible errors and retry controls.
 
-FireSight is a student prototype for exploring prevention planning. Its scores and forecasts have not been validated for operational use and do not determine whether a building is safe.
+## Scores and projections
+
+| Output | Meaning |
+| --- | --- |
+| Current score | A relative 0–100 indicator. Model uses the mean DataZone score for the ward's assigned SIMD decile; Mock uses sample scores. |
+| Future score | Current score plus 4, 8 or 12 points for Years 1–3, capped at 100. These are fixed scenario adjustments. |
+| Annual projection | Model's projected dwelling-fire count for each of three years after the 2009/10–2022/23 training period. Current displays Year 1. |
+| Projection range | An indicative residual-based range for Year 1 only. |
+
+The score and incident count are separate outputs. Model's annual projections come from a recency-weighted linear trend over 14 historical observations; they are not refreshed rolling forecasts. Mock's legacy monthly forecasts are not displayed as annual results.
+
+FireSight is a student prototype. Its scores, forecasts and suggestions have not been validated for operational use. The ward score is a deprivation-decile proxy rather than a geographic aggregation of the DataZones inside each ward.
 
 ## Technology
 
@@ -25,7 +36,7 @@ FireSight is a student prototype for exploring prevention planning. Its scores a
 | Backend | Python and FastAPI for risk data, forecasts, GeoJSON, and explanations. |
 | Data pipeline | pandas and NumPy for processing SIMD indicators and historical fire statistics. |
 | Risk model | Weighted DataZone indicators and linear trends in historical ward fire counts. |
-| Optional explanations | OpenAI API, with built-in explanations when unavailable. |
+| Planning suggestions | Mock uses template examples. Model generates suggestions through the OpenAI API for the selected ward and timeframe, with explicit API errors and no sample fallback. |
 
 ## Run locally
 
@@ -68,14 +79,17 @@ Open the address Vite prints, normally <http://localhost:5173>. Keep both server
 
 | Variable | File | Purpose |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | `backend/.env` | Optional key for generated explanations. Without it, the backend uses built-in explanations. |
-| `OPENAI_MODEL` | `backend/.env` | Optional model selection; defaults to `gpt-4o-mini`. |
+| `OPENAI_API_KEY` | `backend/.env` | Required for Model suggestions; Mock uses built-in examples without a key. |
+| `OPENAI_MODEL` | `backend/.env` | Optional model selection; defaults to `gpt-4o-mini`. `gpt-6-luna` is also supported and has been tested locally. |
 | `VITE_BACKEND_URL` | `frontend/fire_website/.env.local` | Backend address; defaults to `http://localhost:8000`. |
-| `VITE_EVENTS_API_URL` | `frontend/fire_website/.env.local` | Optional events endpoint; the app uses sample events if unavailable. |
+| `VITE_MAP_TILE_URL` | `frontend/fire_website/.env.local` | Optional light raster basemap URL; defaults to standard OpenStreetMap tiles. |
+| `VITE_MAP_ATTRIBUTION` | `frontend/fire_website/.env.local` | Attribution HTML required by a custom tile provider; defaults to OpenStreetMap credit. |
+
+Model scores and forecasts work without an OpenAI key. For generated suggestions, copy `backend/.env.example` to `backend/.env`, set `OPENAI_API_KEY`, and optionally set `OPENAI_MODEL=gpt-6-luna`. Restart the backend after configuration changes. Missing credentials, quota/rate limits, timeouts and provider errors are reported; scores and projections remain available. The integration uses the [official OpenAI Python SDK](https://developers.openai.com/api/reference/python).
 
 Example settings are provided in `backend/.env.example` and `frontend/fire_website/.env.example`. Keep credentials out of Git, and keep the OpenAI key on the backend: frontend `VITE_` variables are visible to the browser.
 
-The current CARTO basemap requests display an API-key warning until the tile provider is configured. This external dependency is retained in the preserved baseline.
+The basemap uses standard OpenStreetMap tiles without an API key. Night mode styles the same tiles locally while preserving the risk-overlay colours. Follow the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/): retain visible attribution, allow normal browser caching and referrer headers, and do not bulk-download or prefetch tiles. The service is best-effort; review provider capacity before a wider deployment.
 
 ### Model data
 
@@ -106,11 +120,42 @@ The hackathon prototype was built collaboratively by Team 7. The original commit
 - Developed FastAPI endpoints serving risk scores, forecasts, and GeoJSON for 23 Glasgow wards to the interactive map.
 - Processed model outputs for the API and fixed non-finite values that caused JSON serialization failures.
 
-## Baseline and continued development
+## Continued development
 
-The agreed team baseline is preserved at commit `c85ae93` under the [`team-baseline` tag](https://github.com/iluha2vuha/firesight/tree/team-baseline). Continued development takes place on `portfolio/improvements`.
+The agreed team baseline is preserved at commit `c85ae93` under the [`team-baseline` tag](https://github.com/iluha2vuha/firesight/tree/team-baseline). It is the selected team snapshot; the exact live-demo commit has not been confirmed. The original team repository remains separate.
 
-The [improvement roadmap](docs/ROADMAP.md) tracks the planned work on reliability, data reproducibility, model evaluation, testing, and deployment.
+The personal continuation on `main` includes:
+
+- Restored OpenStreetMap imagery with light/dark styling and configurable tile providers.
+- Corrected forecast coverage to exactly match all 23 Glasgow wards, including North East, and fixed identifiers for 746 DataZones.
+- Unified annual timeframe controls and separated model incident projections from fixed score scenarios.
+- Rebuilt the dashboard around a searchable ward list, map selection, a compact filter dock and dismissible panels.
+- Separated Mock premises/events from Model outputs and removed sample ward context from the detail panel.
+- Added validated API responses, cancellation, request deadlines, retries and protection against stale data.
+- Split template suggestions from live OpenAI generation, added source/ward/period checks, and fixed GPT-6 Luna request compatibility.
+- Added regression tests and checked the main workflow, themes, keyboard controls and responsive layouts in the browser.
+
+Changes are developed on feature branches and merged through pull requests. Personal review notes, local instructions and API credentials stay outside Git.
+
+## Checks
+
+From the repository root, with the Python environment active:
+
+```bash
+python -m unittest discover -s backend -p 'test_*.py'
+```
+
+From `frontend/fire_website`:
+
+```bash
+npm test
+npm run lint
+npm run build
+```
+
+The current suites contain 18 backend tests and 15 frontend tests. Backend suggestion tests mock OpenAI and require no API key. Live generation with GPT-6 Luna was verified separately; it is not part of the automated suite. These checks run locally; CI is not configured.
+
+See the [roadmap](docs/ROADMAP.md) for remaining work: clean-environment setup verification, data provenance, forecast evaluation and deployment hardening.
 
 ## Repository layout
 

@@ -1,36 +1,36 @@
-import './Map.css';
+import { useEffect, useState } from 'react';
+import { scoreColor } from '../../utils/wards';
 
-const MapLegend = ({ hoveredRiskBand, onRiskBandHover }) => {
-  return (
-    <div className="map-legend" onMouseLeave={() => onRiskBandHover(null)}>
-      <h4>Risk Factor (Demand)</h4>
-      <p className="legend-subtitle">
-        Showing aggregated risk by area.
-      </p>
-      
-      <div
-        className={`legend-item ${hoveredRiskBand === 'high' ? 'active' : ''}`}
-        onMouseEnter={() => onRiskBandHover('high')}
-      >
-        <div className="color-box risk-high"></div>
-        <span>High Risk (75 - 100)</span>
-      </div>
-      <div
-        className={`legend-item ${hoveredRiskBand === 'medium' ? 'active' : ''}`}
-        onMouseEnter={() => onRiskBandHover('medium')}
-      >
-        <div className="color-box risk-medium"></div>
-        <span>Medium Risk (40 - 74)</span>
-      </div>
-      <div
-        className={`legend-item ${hoveredRiskBand === 'low' ? 'active' : ''}`}
-        onMouseEnter={() => onRiskBandHover('low')}
-      >
-        <div className="color-box risk-low"></div>
-        <span>Low Risk (0 - 39)</span>
-      </div>
-    </div>
-  );
-};
+const BANDS = [
+  { id:'high', label:'Higher', range:'75–100', score:75 },
+  { id:'medium', label:'Medium', range:'40–74', score:40 },
+  { id:'low', label:'Lower', range:'0–39', score:0 },
+];
 
-export default MapLegend;
+function WardBands({ timeFrame, onHighlightBand }) {
+  const [hoveredBand, setHoveredBand] = useState(null);
+  const [focusedBand, setFocusedBand] = useState(null);
+  const activeBand = hoveredBand ?? focusedBand;
+
+  useEffect(() => {
+    onHighlightBand(activeBand);
+    return () => onHighlightBand(null);
+  }, [activeBand, onHighlightBand]);
+
+  return <><strong>{timeFrame === 'Current' ? 'Current score' : 'Scenario score'}</strong>
+      <div className="legend-bands">{BANDS.map((band) => <button
+        key={band.id} type="button" className={activeBand === band.id ? 'active' : ''}
+        aria-label={`Highlight ${band.label.toLowerCase()}-score wards (${band.range})`}
+        onMouseEnter={() => setHoveredBand(band.id)} onMouseLeave={() => setHoveredBand(null)}
+        onFocus={() => setFocusedBand(band.id)} onBlur={() => setFocusedBand(null)}
+      ><i style={{background:scoreColor(band.score)}}/>{band.label}<small>{band.range}</small></button>)}</div>
+    </>;
+}
+
+export default function MapLegend({ timeFrame, showWards, showPremises, showEvents, onHighlightBand }) {
+  return <div className="map-legend" aria-label="Map legend">
+    {showWards && <WardBands timeFrame={timeFrame} onHighlightBand={onHighlightBand}/>}
+    {showEvents && <div className="events-legend"><i/>Event examples</div>}
+    {showPremises && <div className="premises-legend"><i/>High-risk premises examples</div>}
+  </div>;
+}

@@ -197,41 +197,55 @@ GET /api/premises/P001
 
 ### `GET /api/explain`
 
-Returns a human-readable explanation for a ward or premises.
-
-Ward example:
+Provides suggestions for the selected source and timeframe.
 
 ```text
-GET /api/explain?mode=ward&id=S13002976
+GET /api/explain?mode=ward&id=S13002976&source=mock&period=Current
+GET /api/explain?mode=ward&id=S13002976&source=model&period=Year%202
 ```
 
-Premises example:
+Supported `period` values: `Current`, `Year 1`, `Year 2`, `Year 3`.
 
-```text
-GET /api/explain?mode=premises&id=P001
-```
+- `source=mock` returns template examples and never contacts OpenAI.
+- `source=model` calls OpenAI using model-derived ward scores and the selected
+  annual projection. Authored ward-profile text is excluded from its input.
+  `Current` uses the current score and Year 1 projection. Future selections add
+  the same fixed scenario increments used on the map.
+- Model premises requests are rejected because there are no real premises records.
 
-Response shape:
+Example response:
 
 ```json
 {
-  "id": "P001",
-  "mode": "premises",
-  "source": "fallback",
-  "text": "This premises is flagged as Priority 1 because it combines evacuation complexity, dense residential occupancy, and limited appliance access. City-centre demand and planned development pressure may affect prevention demand over the 6 months. This should be treated as a prevention-review and inspection-prioritisation signal, not an official safety judgement."
+  "id": "S13002976",
+  "mode": "ward",
+  "data_source": "model",
+  "period": "Year 2",
+  "source": "openai",
+  "text": "Generated planning options."
 }
 ```
 
-If `OPENAI_API_KEY` is available in `backend/.env`, the endpoint attempts to
-use OpenAI. If the key is missing or the request fails, the backend returns a
-safe fallback explanation.
+Mock responses use `"source": "mock"`. Model responses never fall back to sample
+or template text. They return structured HTTP errors for missing credentials
+(503), authentication/access failures (503), quota/rate limits (429), timeouts
+(504), network failures (503), and empty/incomplete/provider responses (502).
+Raw provider errors and API keys are not returned to the browser.
 
-Important wording rule:
+Set `OPENAI_API_KEY` in the ignored `backend/.env` and restart the backend.
+`OPENAI_MODEL` keeps its existing `gpt-4o-mini` default. Calls have a 15-second
+SDK timeout, no automatic retries, and response storage disabled. Generation
+runs only when requested, not while browsing wards. The status endpoint exposes
+only `openai_configured`, never the key.
 
-```text
-Never say a building is unsafe.
-Say it is flagged for prevention review or inspection prioritisation.
-```
+To use GPT-6 Luna, set `OPENAI_MODEL=gpt-6-luna` in the same file. Requests use
+`max_completion_tokens` and explicitly disable Luna reasoning for these short
+suggestions. Invalid request parameters and unavailable models return distinct
+errors instead of a generic retry message.
+
+Scores, forecasts, chart values and ranges remain model outputs; the API writes
+suggestions, not the underlying numeric prediction. Methodology and validation
+limits are described in Data & method.
 
 ## Compatibility Endpoints
 
