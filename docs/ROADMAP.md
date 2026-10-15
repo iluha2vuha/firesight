@@ -1,29 +1,33 @@
 # Portfolio improvement roadmap
 
-An unchecked item is planned work, not a completed capability.
+Checked items describe completed work. Unchecked items remain planned.
 
-## First: make the demo reliable
+## Completed
 
-- [x] **Restore map imagery.** Replaced CARTO's key-gated tiles with standard OpenStreetMap tiles, retained attribution and night styling, and added provider configuration. Verified streets and place labels in the browser in both day and night modes; the frontend build and component lint check passed.
-- [ ] **Make setup reproducible.** Verify the README in a clean environment, document supported runtimes, and separate app dependencies from optional data tooling where useful. A new user should be able to start the demo from documented commands.
-- [ ] **Explain model availability.** Distinguish missing generated data from a backend connection problem, and show recovery instructions. Verify model mode enables with valid output.
-- [ ] **Handle data and network failures.** Show readable errors for unavailable APIs, malformed responses, and failed map requests. A failed request should not silently leave a blank screen.
+- [x] Preserve `c85ae93` as the agreed team baseline and retain the original team history and credit.
+- [x] Establish a separate public repository with team agreement.
+- [x] Restore map imagery with OpenStreetMap, attribution and light/dark styling.
+- [x] Correct forecast coverage to all 23 Glasgow wards and preserve unique DataZone identifiers.
+- [x] Use Current / Year 1–3 consistently and separate fixed score scenarios from annual incident projections.
+- [x] Rebuild the ward ranking, search, map selection, settings and dismissible sidebar workflow.
+- [x] Keep premises and archived events in Mock; exclude them from Model.
+- [x] Validate API data and distinguish loading, empty, malformed and offline states, with deadlines and retry recovery.
+- [x] Separate Mock templates from OpenAI generation, validate response context and verify live GPT-6 Luna generation.
+- [x] Add focused regression checks: 18 backend tests and 15 frontend tests, plus lint and production build checks.
+- [x] Check the main workflow, both modes/themes, keyboard interactions and common viewport sizes in the browser.
+- [x] Add legend category highlighting and preserve map position during normal interactions.
+- [x] Document the personal continuation separately from the hackathon contributions.
 
-## Next: make results understandable and checkable
+## Remaining
 
-- [ ] **Document data provenance.** Record sources, dates, preparation steps, and which values are mock or derived. Verify the complete generation process from its required inputs.
-- [x] **Correct forecast horizon labels.** Model views and explanations describe the three annual projections as Years 1, 2 and 3. Existing CSV/API field names are retained for compatibility; Both modes use whole-year controls; sample monthly forecasts are hidden in Mock mode rather than relabelled as annual data.
-- [ ] **Evaluate forecasting.** Define an appropriate time-based evaluation, compare with a simple baseline, and report limitations. Claim accuracy only after measuring it.
-- [ ] **Add focused automated checks.** Cover meaningful API behaviour, missing data, JSON serialization, and key frontend flows; add CI for appropriate checks.
-- [ ] **Review usability.** Verify legends, controls, keyboard access, and layouts at common screen sizes.
-
-## Then: prepare a portfolio release
-
-- [x] Select and preserve `c85ae93` as the team baseline after comparing it with `a34243c`.
-- [ ] Identify the exact hackathon demo commit if it can be recovered; keep it distinct from the selected baseline.
-- [x] Create a standalone personal repository, retaining team credit, history, and the baseline tag.
-- [x] Document individual hackathon contributions and retain team credit.
-- [x] Confirm team agreement and establish the public portfolio repository.
-- [ ] Capture screenshots after the important flows work.
-- [ ] Deploy a reproducible demo and document configuration and limitations.
-- [ ] Write a before-and-after account linking each improvement to its implementation and validation.
+- [ ] Verify installation from a clean environment and review application versus optional data-tooling dependencies.
+- [ ] Record complete dataset provenance, licences, releases, preparation checks and refresh instructions.
+- [ ] Replace the ward deprivation-decile proxy with a justified geographic DataZone-to-ward aggregation.
+- [ ] Evaluate forecasts with time-based backtesting, a simple baseline and measured range coverage.
+- [ ] Review missing annual observations and geographic boundary changes before extending the model.
+- [ ] Migrate legacy `forecast_6mo` / `12mo` / `18mo` API fields through a documented compatibility plan.
+- [ ] Remove unused legacy frontend components after the redesigned workflow is settled.
+- [ ] Add CI for the existing tests, lint and production build.
+- [ ] Review production CORS, rate limits, configuration, credentials, map-tile capacity and data refresh before deployment.
+- [ ] Deploy a reproducible demo and add current screenshots to the public README.
+- [ ] Recover the exact hackathon demo commit if possible; keep it distinct from the agreed baseline.
