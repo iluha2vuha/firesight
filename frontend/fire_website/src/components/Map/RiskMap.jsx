@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import PremisesLayer from './PremisesLayer';
+import EventLayer from './EventLayer';
 import RiskLayer from './RiskLayer';
 import MapLegend from './MapLegend';
 import Icon from '../Planning/Icon';
@@ -26,7 +27,7 @@ function MapTools({ features, selectedId }) {
   return <div className="map-tools"><button aria-label="Zoom in" title="Zoom in" onClick={() => map.zoomIn()}><Icon name="plus"/></button><button aria-label="Zoom out" title="Zoom out" onClick={() => map.zoomOut()}><Icon name="minus"/></button><button aria-label="Show all Glasgow wards" title="Show all Glasgow wards" onClick={() => map.fitBounds(GLASGOW_BOUNDS, { padding: [15, 15], animate: false })}><Icon name="crosshair"/></button></div>;
 }
 
-export default function RiskMap({ features, timeFrame, nightMode, showWards, showPremises, premises, selectedId, onSelect }) {
+export default function RiskMap({ features, timeFrame, nightMode, showWards, showPremises, showEvents, premises, selectedId, onSelect }) {
   const hasWards = showWards && features.length > 0;
   const hasPremises = showPremises && premises.length > 0;
   return <div className={`risk-map-container${nightMode ? ' night-mode' : ''}`}>
@@ -34,8 +35,9 @@ export default function RiskMap({ features, timeFrame, nightMode, showWards, sho
       <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} maxZoom={19} referrerPolicy="strict-origin-when-cross-origin"/>
       {showWards && <RiskLayer features={features} timeFrame={timeFrame} selectedId={selectedId} onSelect={onSelect}/>}
       {showPremises && <PremisesLayer premises={premises}/>}
+      {showEvents && <EventLayer/>}
       <MapTools features={features} selectedId={selectedId}/>
     </MapContainer>
-    {(hasWards || hasPremises) && <MapLegend timeFrame={timeFrame} showWards={hasWards} showPremises={hasPremises}/>}
+    {(hasWards || hasPremises || showEvents) && <MapLegend timeFrame={timeFrame} showWards={hasWards} showPremises={hasPremises} showEvents={showEvents}/>}
   </div>;
 }

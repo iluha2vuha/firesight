@@ -10,12 +10,15 @@ import { TIME_FRAME_OPTIONS } from './utils/forecast';
 import { validPremisesData, validWardData } from './utils/data';
 
 export default function App() {
-  const [dataSource, setDataSource] = useState('model');
+  const [dataSource, setDataSource] = useState('mock');
   const [selectedPeriod, setTimeFrame] = useState('Current');
   const timeFrame = TIME_FRAME_OPTIONS.includes(selectedPeriod) ? selectedPeriod : 'Current';
   const [attempt, setAttempt] = useState(0);
   const [showWards, setShowWards] = useState(true);
-  const [showPremises, setShowPremises] = useState(false);
+  const [premisesEnabled, setShowPremises] = useState(false);
+  const showPremises = dataSource === 'mock' && premisesEnabled;
+  const [eventsEnabled, setShowEvents] = useState(false);
+  const showEvents = dataSource === 'mock' && eventsEnabled;
   const [panel, setPanel] = useState('wards');
   const [selectedId, setSelectedId] = useState(null);
   const [search, setSearch] = useState('');
@@ -36,7 +39,7 @@ export default function App() {
   const status = rawStatus.status === 'ready' && typeof rawStatus.data?.model_loaded !== 'boolean'
     ? { status: 'error', data: null } : rawStatus;
   const wardResource = useRemoteData(`/api/strategic/wards.geojson?source=${dataSource}`, attempt);
-  const premisesResource = useRemoteData('/api/premises?focus=city-centre&risk_band=high', attempt);
+  const premisesResource = useRemoteData(dataSource === 'mock' ? '/api/premises?focus=city-centre&risk_band=high' : null, attempt);
   const wardsValid = validWardData(wardResource.data, dataSource);
   const features = wardsValid ? wardResource.data.features : [];
   const wardError = wardResource.status === 'error' || (wardResource.status === 'ready' && !wardsValid);
@@ -66,26 +69,32 @@ export default function App() {
     </nav>
     <main className="planning-main">
       <div className="workspace">
-        <section className="map-stage" aria-label="Glasgow ward map">
-          <div className="filter-dock" role="group" aria-label="Map filters">
-            <label className="dock-toggle">
-              <input type="checkbox" checked={showWards} onChange={(e) => setShowWards(e.target.checked)}/>
-              <span className="dock-icon dock-icon-wards"><Icon name="map" size={25}/></span>
-              <span>Ward scores</span>
-            </label>
-            <label className="dock-toggle">
-              <input type="checkbox" checked={showPremises} onChange={(e) => setShowPremises(e.target.checked)}/>
-              <span className="dock-icon dock-icon-premises"><Icon name="pin" size={25}/></span>
-              <span>City-centre examples</span>
-            </label>
-            <label className="dock-period">
-              <span>Projection</span>
-              <select aria-label="Projection period" value={timeFrame} onChange={(e) => setTimeFrame(e.target.value)}>
-                {TIME_FRAME_OPTIONS.map((period) => <option key={period} value={period}>{period}</option>)}
-              </select>
-            </label>
+        <div className="filter-dock" role="group" aria-label="Map filters">
+          <div className="dock-state"><span>Data</span><strong>{dataSource === 'mock' ? 'Mock' : 'Model'}</strong></div>
+          <label className="dock-toggle">
+            <input type="checkbox" checked={showWards} onChange={(e) => setShowWards(e.target.checked)}/>
+            <span className="dock-icon dock-icon-wards"><Icon name="map" size={25}/></span>
+            <span>Ward scores</span>
+          </label>
+          {dataSource === 'mock' && <label className="dock-toggle">
+            <input aria-label="High-risk premises examples" type="checkbox" checked={showPremises} onChange={(e) => setShowPremises(e.target.checked)}/>
+            <span className="dock-icon dock-icon-premises"><Icon name="pin" size={25}/></span>
+            <span>Premises</span>
+          </label>}
+          {dataSource === 'mock' && <label className="dock-toggle">
+            <input aria-label="Event examples" type="checkbox" checked={showEvents} onChange={(e) => setShowEvents(e.target.checked)}/>
+            <span className="dock-icon dock-icon-events"><Icon name="calendar" size={25}/></span>
+            <span>Events</span>
+          </label>}
+          <div className="dock-period">
+            <span>Timeframe</span>
+            <div className="period-options" role="group" aria-label="Projection period">
+              {TIME_FRAME_OPTIONS.map((period) => <button key={period} aria-pressed={timeFrame === period} onClick={() => setTimeFrame(period)}>{period}</button>)}
+            </div>
           </div>
-          <RiskMap features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
+        </div>
+        <section className="map-stage" aria-label="Glasgow ward map">
+          <RiskMap features={features} timeFrame={timeFrame} nightMode={nightMode} showWards={showWards} showPremises={showPremises} showEvents={showEvents} premises={premises} selectedId={selectedId} onSelect={chooseWard}/>
           <div className="map-notices">
             {(wardResource.status === 'loading' || wardError) && <div className="map-notice" role={wardError ? 'alert' : 'status'}>
               {wardError ? <>

@@ -24,7 +24,11 @@ export default function DataPanel() {
     </section>
     <section className="detail-section">
       <h3>City-centre examples</h3>
-      <p className="small-copy">Premises are illustrative records with authored scores and inspection priorities. They are hidden by default and remain sample data in either mode. They are not verified inspections or live risk records.</p>
+      <p className="small-copy">Premises are illustrative records with authored scores and inspection priorities. They are hidden by default and available in Mock only. Model does not include premises records. They are not verified inspections or live risk records.</p>
+    </section>
+    <section className="detail-section">
+      <h3>Event examples</h3>
+      <p className="small-copy">The four original hackathon events are archived examples, available in Mock only. Their dates and attendance are demo values, not a verified calendar. They do not filter by the ward timeframe or affect ward scores and projections.</p>
     </section>
   </>;
 }

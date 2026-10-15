@@ -11,8 +11,8 @@ This repository is Illia Zakharov's personal continuation of the [original team 
 - **Ward priorities:** search a ranked ward list and select a ward to inspect its map outline, score, context and projection chart.
 - **Forecast views:** compare current indicators with Year 1, Year 2, and Year 3 projections. The same whole-year scenario controls are used in both modes; annual incident forecasts are provided by Model mode.
 - **Planning guidance:** load optional generated or built-in suggestions from the ward detail panel.
-- **Sample premises:** inspect an explicitly labelled illustrative city-centre layer, hidden by default.
-- **Workspace settings:** choose Model/Mock and dark/light appearance in Settings; filter map layers and projection periods above the map.
+- **Mock examples:** independently show high-risk city-centre premises and archived demo events, both hidden by default and available only in Mock.
+- **Workspace settings:** start in Mock and switch to Model or dark/light appearance in Settings. A left-aligned dock shows the active data source, layer controls, and Current / Year 1–3; the ward list and detail panels sit on the left.
 
 In Model mode, the ward map starts from the existing model score (the mean DataZone score for the ward's SIMD decile). Future model views add 4, 8, or 12 risk points for Years 1, 2, or 3, capped at 100. These are scenario adjustments; incident forecasts are shown separately as annual counts for each projected year, rather than cumulative totals. These historical projections follow the 2009/10–2022/23 training data and are not refreshed rolling forecasts. Mock mode provides illustrative scores with the same annual scenario controls. Its legacy sample monthly forecasts are not displayed as annual data.
 

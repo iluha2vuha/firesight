@@ -5,6 +5,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 export default function useRemoteData(path, attempt) {
   const [resource, setResource] = useState({ path: null, attempt: null, status: 'loading', data: null });
   useEffect(() => {
+    if (!path) return;
     const controller = new AbortController();
     let cancelled = false;
     const timeout = setTimeout(() => controller.abort(), 10000);
@@ -28,6 +29,7 @@ export default function useRemoteData(path, attempt) {
       clearTimeout(timeout);
     };
   }, [path, attempt]);
+  if (!path) return { status: 'idle', data: null };
   return resource.path === path && resource.attempt === attempt
     ? resource : { status: 'loading', data: null };
 }

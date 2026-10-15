@@ -9,7 +9,7 @@ export default function SettingsPanel({ dataSource, setDataSource, nightMode, se
         <button aria-pressed={dataSource === 'model'} onClick={() => setDataSource('model')} disabled={status.status === 'ready' && !status.data?.model_loaded}>Model</button>
         <button aria-pressed={dataSource === 'mock'} onClick={() => setDataSource('mock')}>Mock</button>
       </div>
-      <p className="small-copy">Model uses historical statistics and derived scores. Mock uses sample scores. Both use Current and Years 1–3; annual fire projections are available in Model mode.</p>
+      <p className="small-copy">Mock is the starting view and uses sample ward scores and optional high-risk premises and event examples. Model uses real historical statistics for ward scores and annual fire projections; it has no real premises or event records. Both use Current and Years 1–3.</p>
       {status.status === 'error' ? <>
         <p className="error-copy" role="alert">Backend connection unavailable.</p>
         <button className="secondary-button" onClick={onRetry}>Retry connection</button>
@@ -29,8 +29,8 @@ export default function SettingsPanel({ dataSource, setDataSource, nightMode, se
     <section className="detail-section">
       <h3>Map layers</h3>
       <p className="small-copy">Use the dock at the top of the map to change layers or the scenario year.</p>
-      <p className="small-copy">{premisesStatus === 'loading' ? 'Loading city-centre examples…' : premisesStatus === 'ready' ? `${premisesCount} sample premises available.` : 'Sample premises are unavailable.'}</p>
-      {premisesStatus === 'error' && <button className="secondary-button" onClick={onRetry}>Retry premises</button>}
+      {dataSource === 'mock' ? <><p className="small-copy">{premisesStatus === 'loading' ? 'Loading city-centre examples…' : premisesStatus === 'ready' ? `${premisesCount} high-risk premises examples and 4 archived event examples available.` : 'Sample premises are unavailable.'}</p>
+      {premisesStatus === 'error' && <button className="secondary-button" onClick={onRetry}>Retry premises</button>}</> : <p className="small-copy">Premises and event examples are available in Mock only. Model shows ward scores and historical projections.</p>}
     </section>
   </>;
 }
