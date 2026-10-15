@@ -108,7 +108,6 @@ h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; line-height: 1.5; }
 .chart-axis { fill: var(--muted); font-size: 10px; }
 .chart-bar { fill: var(--accent); opacity: .68; }
 .chart-value { fill: var(--text); font-size: 11px; }
-.context-list p { margin: 0; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 12px; line-height: 1.6; }
 .record-details, .guidance-section { margin-top: 24px; padding-top: 19px; border-top: 1px solid var(--line); }
 summary { cursor: pointer; font-size: 12px; font-weight: 500; line-height: 1.6; padding: 4px 0; }
 .record-details[open] summary, .guidance-section[open] summary { margin-bottom: 14px; }

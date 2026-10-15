@@ -34,10 +34,6 @@ export default function WardPanel({ features, selected, onSelect, onBack, dataSo
           <ForecastChart prediction={p.prediction} dataSource={dataSource}/>
         </> : <p className="small-copy">Projection unavailable.</p>}
       </section>}
-      {dataSource === 'mock' && <section className="detail-section">
-        <h3>Sample context</h3>
-        <div className="context-list">{(p.drivers || []).map((driver) => <p key={driver}>{driver}</p>)}</div>
-      </section>}
       <Guidance key={`${p.ward_id}-${dataSource}-${timeFrame}`} wardId={p.ward_id} dataSource={dataSource} timeFrame={timeFrame}/>
       <details key={p.ward_id} className="record-details">
         <summary>Ward information</summary>

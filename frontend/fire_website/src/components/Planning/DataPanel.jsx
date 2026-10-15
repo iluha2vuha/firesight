@@ -26,7 +26,7 @@ export default function DataPanel() {
     <section className="detail-section">
       <h3>Suggestions</h3>
       <ul className="panel-notes">
-        <li><strong>Mock:</strong> written examples and sample ward context.</li>
+        <li><strong>Mock:</strong> written examples.</li>
         <li><strong>Model:</strong> OpenAI uses the ward's score and selected annual projection. Current uses Year 1.</li>
       </ul>
     </section>
