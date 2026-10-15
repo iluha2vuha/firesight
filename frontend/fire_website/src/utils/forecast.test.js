@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { selectForecast } from './forecast.js';
+import { selectForecast, timeframeLabel, timeframeMonths } from './forecast.js';
 
 const linn = {
   forecast_6mo: 30,
@@ -41,4 +41,37 @@ test('distinguishes a valid zero forecast from missing or invalid data', () => {
   assert.equal(selectForecast({ forecast_12mo: 0 }, 'In 1 year').value, 0);
   assert.equal(selectForecast({ forecast_12mo: NaN }, 'In 1 year').value, null);
   assert.equal(selectForecast({ forecast_12mo: Infinity }, 'In 1 year').value, null);
+});
+
+
+test('labels the model outputs as three separate annual counts', () => {
+  for (const [timeFrame, year, value] of [
+    ['Current', 1, 30],
+    ['In 6 months', 1, 30],
+    ['In 1 year', 2, 29],
+    ['In 1.5 years', 3, 28],
+  ]) {
+    const forecast = selectForecast(linn, timeFrame, 'model');
+    assert.equal(forecast.label, `Year ${year}`);
+    assert.equal(forecast.months, year * 12);
+    assert.equal(forecast.value, value);
+    if (year > 1) {
+      assert.equal(forecast.lower, null);
+      assert.equal(forecast.upper, null);
+      assert.equal(forecast.trend, null);
+    }
+  }
+});
+
+test('uses annual control labels and calendar windows for Model mode only', () => {
+  assert.equal(timeframeLabel('Current', 'model'), 'Current');
+  for (const [timeFrame, year] of [
+    ['In 6 months', 1], ['In 1 year', 2], ['In 1.5 years', 3],
+  ]) {
+    assert.equal(timeframeLabel(timeFrame, 'model'), `Year ${year}`);
+    assert.equal(timeframeMonths(timeFrame, 'model'), year * 12);
+    assert.equal(timeframeLabel(timeFrame, 'mock'), timeFrame);
+    assert.equal(timeframeMonths(timeFrame, 'mock'), year * 6);
+    assert.equal(selectForecast(linn, timeFrame, 'mock').label, `${year * 6}-month`);
+  }
 });

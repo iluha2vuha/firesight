@@ -23,6 +23,21 @@ class ModelDataContractTests(unittest.TestCase):
         self.assertGreater(len(shared_area), 1)
         self.assertEqual(len({z['zonename'] for z in shared_area}), len(shared_area))
 
+    def test_model_explanations_use_annual_units(self):
+        ward = main.wards_by_id['S13003133']
+        explanation = main.fallback_ward_explanation_model(ward)
+        self.assertIn('Year 1', explanation)
+        self.assertNotIn('6 months', explanation)
+        context = main._ai_context('ward', ward, source='model')
+        self.assertIn('annual count', context)
+        self.assertNotIn('/6mo', context)
+        payload = main.build_explain_payload('ward', ward, source='model')
+        self.assertEqual(payload['forecast_period_unit'], 'year')
+        self.assertEqual(payload['forecast_year_1'], 24)
+        self.assertEqual(payload['forecast_year_2'], 23)
+        self.assertEqual(payload['forecast_year_3'], 22)
+        self.assertNotIn('forecast_6mo', payload)
+
     def test_model_responses_are_json_serializable(self):
         json.dumps(main.get_strategic_wards_geojson(source='model'), allow_nan=False)
         json.dumps(main.top_zones(5), allow_nan=False)

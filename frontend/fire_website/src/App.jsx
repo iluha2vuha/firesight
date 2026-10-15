@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import RiskMap from './components/Map/RiskMap';
 import TopRiskAreas from './components/Dashboard/TopRiskAreas';
+import { timeframeLabel } from './utils/forecast';
 
 const TIME_FRAME_OPTIONS = ['Current', 'In 6 months', 'In 1 year', 'In 1.5 years'];
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
@@ -144,7 +145,7 @@ function App() {
           >
             {TIME_FRAME_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {option}
+                {timeframeLabel(option, dataSource)}
               </option>
             ))}
           </select>

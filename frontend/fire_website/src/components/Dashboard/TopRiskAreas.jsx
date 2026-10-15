@@ -104,7 +104,7 @@ const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current', refreshKey =
     <div className="top-areas">
       <h3>Top Risk {dataSource === 'model' ? 'Zones' : 'Wards'}</h3>
       <p className="top-areas-context">
-        Ranked by current risk · {selectForecast(null, timeFrame).months}-month outlook
+        Ranked by current risk · {selectForecast(null, timeFrame, dataSource).label} outlook
       </p>
       {status === 'loading' ? (
         <p className="top-areas-loading" role="status">Loading…</p>
@@ -120,7 +120,7 @@ const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current', refreshKey =
       ) : (
         <ul>
           {areas.map((a) => {
-            const forecast = selectForecast(a.prediction, timeFrame);
+            const forecast = selectForecast(a.prediction, timeFrame, dataSource);
             return (
               <li key={a.id} className="top-area-item">
                 <div className="top-area-header">
@@ -136,7 +136,7 @@ const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current', refreshKey =
 
                 {forecast.value != null ? (
                   <p className="top-area-forecast">
-                    {forecast.months}-month forecast: <strong>{forecast.value}</strong> incidents
+                    {forecast.label} forecast: <strong>{forecast.value}</strong> incidents
                     {forecast.trend != null && (
                       <span className={`top-area-trend ${forecast.trend > 0 ? 'up' : forecast.trend < 0 ? 'down' : ''}`}>
                         {' '}({forecast.trend > 0 ? '+' : ''}{forecast.trend}%)
@@ -144,7 +144,7 @@ const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current', refreshKey =
                     )}
                   </p>
                 ) : (
-                  <p className="top-area-forecast">{forecast.months}-month forecast unavailable</p>
+                  <p className="top-area-forecast">{forecast.label} forecast unavailable</p>
                 )}
 
                 <button
@@ -152,7 +152,7 @@ const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current', refreshKey =
                   onClick={() => fetchAI(a.id, a.mode)}
                   disabled={!!loadingById[a.id]}
                 >
-                  {loadingById[a.id] ? 'Generating…' : 'AI Next Steps (6-month)'}
+                  {loadingById[a.id] ? 'Generating…' : `AI Next Steps (${dataSource === 'model' ? '1-year' : '6-month'})`}
                 </button>
 
                 {aiById[a.id] && (

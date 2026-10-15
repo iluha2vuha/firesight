@@ -1,15 +1,10 @@
 import { Marker, Pane, Popup } from 'react-leaflet';
 import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
+import { timeframeMonths } from '../../utils/forecast';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
-const TIMEFRAME_TO_MONTHS = {
-  Current: 1,
-  'In 6 months': 6,
-  'In 1 year': 12,
-  'In 1.5 years': 18
-};
 
 const premisesIcon = L.divIcon({
   className: 'premises-marker-icon-root',
@@ -35,7 +30,7 @@ const isValidLatLng = (lat, lng) =>
   Math.abs(lat) <= 90 &&
   Math.abs(lng) <= 180;
 
-const PremisesLayer = ({ timeFrame = 'Current', focus = 'city-centre', riskBandFilter = 'high' }) => {
+const PremisesLayer = ({ timeFrame = 'Current', dataSource = 'mock', focus = 'city-centre', riskBandFilter = 'high' }) => {
   const [premises, setPremises] = useState([]);
   const [aiById, setAiById] = useState({});
   const [aiLoadingById, setAiLoadingById] = useState({});
@@ -63,7 +58,7 @@ const PremisesLayer = ({ timeFrame = 'Current', focus = 'city-centre', riskBandF
   }, [focus]);
 
   const filteredPremises = useMemo(() => {
-    const months = TIMEFRAME_TO_MONTHS[timeFrame] ?? 1;
+    const months = timeframeMonths(timeFrame, dataSource);
 
     return premises
       .filter((p) => isValidLatLng(Number(p.lat), Number(p.lng)))
@@ -76,7 +71,7 @@ const PremisesLayer = ({ timeFrame = 'Current', focus = 'city-centre', riskBandF
         if (!pressureMonths) return true;
         return pressureMonths <= months;
       });
-  }, [premises, riskBandFilter, timeFrame]);
+  }, [premises, riskBandFilter, timeFrame, dataSource]);
 
   const explainPremises = async (premisesId) => {
     if (!premisesId) return;

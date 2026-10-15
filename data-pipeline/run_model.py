@@ -238,6 +238,8 @@ def forecast_ward(counts, n_periods=(1, 2, 3)):
                       "data_quality": "sufficient" if n >= 6 else "limited"}
 
 
+# Legacy output column names are retained for API compatibility. Each forecast
+# period below is one year; the UI labels these projections Years 1, 2 and 3.
 ward_forecast_rows = []
 for ward_code, row in pivot.iterrows():
     counts = row.values.astype(float)
@@ -245,7 +247,7 @@ for ward_code, row in pivot.iterrows():
     ward_forecast_rows.append({
         "ward_id":        ward_code,
         "ward_name":      ward_names.get(ward_code, ward_code),
-        "history_6mo":    counts[-6:].tolist(),   # last 3 years as 6 half-years proxy
+        "history_6mo":    counts[-6:].tolist(),   # last six annual observations (legacy field name)
         "forecast_6mo":   r[1]["forecast"],
         "forecast_lower": r[1]["lower"],
         "forecast_upper": r[1]["upper"],

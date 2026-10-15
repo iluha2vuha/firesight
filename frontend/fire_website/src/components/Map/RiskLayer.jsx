@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { GeoJSON } from 'react-leaflet';
-import { selectForecast } from '../../utils/forecast';
+import { selectForecast, timeframeLabel } from '../../utils/forecast';
 import { riskForTimeframe } from '../../utils/risk';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
@@ -104,7 +104,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
     const baseRisk = p.risk_score ?? timeframeRisk;
     const scenarioHtml = timeFrame === 'Current' ? ''
       : `<p class="popup-row"><b>Risk scenario:</b> current score +${riskForTimeframe(0, timeFrame)} points, capped at 100</p>`;
-    const forecast = selectForecast(prediction, timeFrame);
+    const forecast = selectForecast(prediction, timeFrame, dataSource);
     const isModel = p.data_source === 'model';
     const modelComponents = p.model_components ?? null;
 
@@ -112,11 +112,11 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
       ? ` <span class="popup-ci">(range ${forecast.lower}–${forecast.upper})</span>`
       : '';
     const trendHtml = forecast.trend != null
-      ? `<p class="popup-row"><b>6-month trend:</b> ${forecast.trend}%</p>`
+      ? `<p class="popup-row"><b>${forecast.label} trend:</b> ${forecast.trend}%</p>`
       : '';
     const forecastHtml = forecast.value != null
-      ? `<p class="popup-row"><b>${forecast.months}-month forecast:</b> ${forecast.value} incidents${ciText}</p>${trendHtml}`
-      : `<p class="popup-row popup-pending">⚠ ${forecast.months}-month forecast unavailable — incident data pending</p>`;
+      ? `<p class="popup-row"><b>${forecast.label} forecast:</b> ${forecast.value} incidents${ciText}</p>${trendHtml}`
+      : `<p class="popup-row popup-pending">⚠ ${forecast.label} forecast unavailable — incident data pending</p>`;
 
     const componentsBadge = isModel && modelComponents
       ? `<span class="popup-components-badge">${modelComponents}/5 data sources</span>`
@@ -138,7 +138,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
           </span>
           <span class="popup-score-label">/ 100 Risk Score</span>
         </div>
-        <p class="popup-timeframe"><b>Time frame:</b> ${timeFrame}</p>
+        <p class="popup-timeframe"><b>Time frame:</b> ${timeframeLabel(timeFrame, dataSource)}</p>
         <p class="popup-row"><b>Ward ID:</b> ${p.ward_id ?? 'n/a'}</p>
         <p class="popup-row"><b>Current Score:</b> ${baseRisk}/100</p>
         ${scenarioHtml}
@@ -160,7 +160,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
               data-mode="ward"
               data-id="${wardId}"
             >
-              AI Next Steps (6-month)
+              AI Next Steps (${dataSource === 'model' ? '1-year' : '6-month'})
             </button>
             <span class="popup-ai-meta" data-ai-meta></span>
           </div>
@@ -212,7 +212,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
               'Could not load the AI overview right now. Please try again.';
           } finally {
             btn.disabled = false;
-            btn.textContent = 'AI Next Steps (6-month)';
+            btn.textContent = `AI Next Steps (${dataSource === 'model' ? '1-year' : '6-month'})`;
           }
         });
       });

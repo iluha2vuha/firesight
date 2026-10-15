@@ -10,12 +10,12 @@ This repository is Illia Zakharov's personal continuation of the [original team 
 
 - **Interactive risk map:** explore risk indicators across 23 Glasgow wards, with ranked areas and supporting risk drivers.
 - **Premises overlay:** view prototype City Centre premises profiles and inspection priorities.
-- **Forecast views:** compare current indicators with 6-, 12-, and 18-month views.
+- **Forecast views:** compare current indicators with Year 1, Year 2, and Year 3 model projections (Mock mode uses sample 6-, 12-, and 18-month views).
 - **Mock and model modes:** explore sample data or generated DataZone scores and ward forecasts.
 - **Risk explanations:** view prevention recommendations, with optional OpenAI-generated explanations and a built-in fallback.
 - **Day and night views:** switch the dashboard and map styling.
 
-In Model mode, the ward map starts from the existing model score (the mean DataZone score for the ward's SIMD decile). Future views add 4, 8, or 12 risk points for 6, 12, or 18 months, capped at 100. These are scenario adjustments; incident forecasts are shown separately.
+In Model mode, the ward map starts from the existing model score (the mean DataZone score for the ward's SIMD decile). Future model views add 4, 8, or 12 risk points for Years 1, 2, or 3, capped at 100. These are scenario adjustments; incident forecasts are shown separately as annual counts for each projected year, rather than cumulative totals. Mock mode retains its illustrative month-based data.
 
 FireSight is a student prototype for exploring prevention planning. Its scores and forecasts have not been validated for operational use and do not determine whether a building is safe.
 

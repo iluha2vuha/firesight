@@ -353,7 +353,7 @@ def fallback_ward_explanation_model(feature):
         n_years = int(wf["n_years"]) if wf.get("n_years") is not None else 14
         capacity_line = (
             f"SFRS dwelling fire data ({n_years} years, 2009–2023) forecasts {f6} incidents "
-            f"over the next 6 months (range {fl}–{fu}); demand trend is {trend_word} "
+            f"in Year 1 (one annual period) (range {fl}–{fu}); demand trend is {trend_word} "
             f"({'+' if trend >= 0 else ''}{trend}%) — plan prevention staffing and response capacity "
             f"proportionally and flag to station commanders."
         )
@@ -456,8 +456,10 @@ def build_explain_payload(mode, record, source: str = "mock"):
                 "active_model_components": 1,
                 "total_model_components": 5,
                 "forecast_available": forecast_available,
-                "forecast_6mo": round(float(wf["forecast_6mo"]), 1) if forecast_available else None,
-                "forecast_12mo": round(float(wf["forecast_12mo"]), 1) if forecast_available and wf.get("forecast_12mo") is not None else None,
+                "forecast_year_1": round(float(wf["forecast_6mo"]), 1) if forecast_available else None,
+                "forecast_year_2": round(float(wf["forecast_12mo"]), 1) if forecast_available and wf.get("forecast_12mo") is not None else None,
+                "forecast_year_3": round(float(wf["forecast_18mo"]), 1) if forecast_available and wf.get("forecast_18mo") is not None else None,
+                "forecast_period_unit": "year",
                 "forecast_lower": round(float(wf["forecast_lower"]), 1) if forecast_available and wf.get("forecast_lower") is not None else None,
                 "forecast_upper": round(float(wf["forecast_upper"]), 1) if forecast_available and wf.get("forecast_upper") is not None else None,
                 "trend_pct": wf.get("trend_pct") if forecast_available else None,
@@ -467,7 +469,8 @@ def build_explain_payload(mode, record, source: str = "mock"):
                 "data_basis": (
                     "Risk score: SIMD 2020 deprivation index. "
                     "Forecast: OLS linear model on 14 years of SFRS accidental dwelling fire data (2009–2023), "
-                    "recency-weighted, 95% confidence interval shown."
+                    "recency-weighted. Values are annual incident counts in Years 1, 2 and 3, not cumulative totals. "
+                    "The interval and trend apply to Year 1 only."
                 ),
             }
         return {
@@ -529,7 +532,7 @@ def _ai_context(mode, record, source: str = "mock") -> str:
                 trend = wf.get("trend_pct") or 0
                 return (
                     f"Ward: {props['ward_name']} | Risk: {score}/100 ({band}) | SIMD decile: {decile} "
-                    f"| Drivers: {d} | Forecast: {f6}/6mo (CI {fl}–{fu}) | Trend: {trend:+}%"
+                    f"| Drivers: {d} | Forecast: {f6} in Year 1 (annual count; CI {fl}–{fu}) | Trend: {trend:+}%"
                 )
             return f"Ward: {props['ward_name']} | Risk: {score}/100 ({band}) | SIMD decile: {decile} | Drivers: {d}"
         pred = prediction_for(record)

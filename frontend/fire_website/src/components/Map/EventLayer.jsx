@@ -1,6 +1,7 @@
 import { Marker, Pane, Popup } from 'react-leaflet';
 import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
+import { timeframeMonths } from '../../utils/forecast';
 
 const DEFAULT_EVENTS_API_URL = 'http://localhost:5000/api/events';
 
@@ -58,12 +59,6 @@ const FALLBACK_EVENTS = [
   }
 ];
 
-const TIMEFRAME_TO_MONTHS = {
-  Current: 1,
-  'In 6 months': 6,
-  'In 1 year': 12,
-  'In 1.5 years': 18
-};
 
 const addMonths = (date, months) => {
   const nextDate = new Date(date);
@@ -93,7 +88,7 @@ const normalizeEvent = (event, idx) => {
   };
 };
 
-const EventLayer = ({ timeFrame }) => {
+const EventLayer = ({ timeFrame, dataSource = 'mock' }) => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
@@ -135,7 +130,7 @@ const EventLayer = ({ timeFrame }) => {
   }, []);
 
   const filteredEvents = useMemo(() => {
-    const months = TIMEFRAME_TO_MONTHS[timeFrame] ?? 1;
+    const months = timeframeMonths(timeFrame, dataSource);
     const now = new Date();
     const endDate = addMonths(now, months);
 
@@ -144,7 +139,7 @@ const EventLayer = ({ timeFrame }) => {
       const eventDate = new Date(event.date);
       return eventDate >= now && eventDate <= endDate;
     });
-  }, [events, timeFrame]);
+  }, [events, timeFrame, dataSource]);
 
   return (
     <Pane name="eventMarkersPane" style={{ zIndex: 550 }}>
