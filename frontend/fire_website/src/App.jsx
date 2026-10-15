@@ -113,10 +113,10 @@ export default function App() {
       <button className={`rail-button${panelOpen && panel === 'wards' ? ' active' : ''}`} ref={wardsButtonRef} aria-expanded={panelOpen && panel === 'wards'} aria-controls="insight-panel" onClick={() => togglePanel('wards')} aria-label="Priority wards" title="Priority wards">
         <Icon name="map"/><span>Wards</span>
       </button>
+      <div className="rail-spacer"/>
       <button className={`rail-button${panelOpen && panel === 'method' ? ' active' : ''}`} aria-expanded={panelOpen && panel === 'method'} aria-controls="insight-panel" onClick={() => togglePanel('method')} aria-label="Data and method" title="Data and method">
         <Icon name="info"/><span>Data</span>
       </button>
-      <div className="rail-spacer"/>
       <button className={`rail-button${panelOpen && panel === 'settings' ? ' active' : ''}`} aria-expanded={panelOpen && panel === 'settings'} aria-controls="insight-panel" onClick={() => togglePanel('settings')} aria-label="Settings" title="Settings">
         <Icon name="settings"/><span>Settings</span>
       </button>

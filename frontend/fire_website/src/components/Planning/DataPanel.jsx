@@ -2,38 +2,49 @@ export default function DataPanel() {
   return <>
     <div className="panel-heading"><h2>Data & method</h2></div>
     <section className="detail-section first-section">
-      <h3>What the score means</h3>
-      <p className="small-copy">The 0–100 score is a relative planning indicator, not a probability of fire. Lower scores do not establish safety.</p>
-      <p className="small-copy">This is a student prototype. Its scores, forecasts and suggested actions have not been validated for operational fire-safety decisions.</p>
-    </section>
-    <section className="detail-section">
       <h3>Ward scores</h3>
-      <p className="source-tag">SIMD 2020</p>
-      <p className="small-copy">DataZone scores combine deprivation, overcrowding, health vulnerability, central heating and crime indicators. The ward map uses the mean zone score for the ward’s assigned deprivation decile. This is a proxy, not a spatial aggregation of every zone inside a ward.</p>
-      <p className="small-copy">The ward list always sorts current scores, even when a scenario year is selected. Tied scores are ordered by ward name.</p>
+      <ul className="panel-notes">
+        <li>Scores run from 0–100. They indicate relative priority, not the chance of a fire.</li>
+        <li>SIMD 2020 indicators cover deprivation, overcrowding, health, central heating and crime.</li>
+        <li>Each ward uses the average DataZone score for its assigned deprivation decile, rather than the zones within its boundary.</li>
+        <li>Wards are ranked by current score. Ties use alphabetical order.</li>
+      </ul>
     </section>
     <section className="detail-section">
-      <h3>Annual projections</h3>
-      <p className="source-tag">2009/10–2022/23 observations</p>
-      <p className="small-copy">Model mode fits a recency-weighted linear trend to 14 annual observations of dwelling fires. Years 1, 2 and 3 are separate annual counts after that training period, not cumulative totals or forecasts trained on today’s data.</p>
-      <p className="small-copy">The range is an indicative residual-based band for Year 1. Accuracy and uncertainty coverage have not been validated. Mock provides sample scores, with no annual incident forecasts.</p>
+      <h3>Fire projections</h3>
+      <ul className="panel-notes">
+        <li>A recency-weighted linear trend uses 14 years of dwelling-fire records, from 2009/10 to 2022/23.</li>
+        <li>Years 1–3 follow that training period. Each is an annual count, not a running total or a forecast based on today's data.</li>
+        <li>The Year 1 range reflects historical model errors. Its coverage has not been validated.</li>
+        <li>Mock has sample scores only, with no annual fire projections.</li>
+      </ul>
     </section>
     <section className="detail-section">
-      <h3>Planning suggestions</h3>
-      <p className="small-copy">Mock suggestions are template examples and never call OpenAI. Model suggestions are generated through the OpenAI API from the selected ward’s model score, selected annual projection and timeframe. Current uses the Year 1 projection. API failures are shown as errors; sample text is never substituted in Model mode.</p>
-      <p className="small-copy">Authored ward context appears in Mock only and is not sent as model evidence. Generated options have not been validated for operational decisions.</p>
+      <h3>Future scores</h3>
+      <ul className="panel-notes">
+        <li>Years 1, 2 and 3 add 4, 8 and 12 points to the current score, up to 100.</li>
+        <li>These are fixed scenario adjustments in both modes, separate from the fire projections.</li>
+      </ul>
     </section>
     <section className="detail-section">
-      <h3>Scenario years</h3>
-      <p className="small-copy">Year 1, 2 and 3 add 4, 8 and 12 points to the current score, capped at 100. These adjustments illustrate scenarios; they are not changes learned by the model. The same controls are used in both modes.</p>
+      <h3>Suggestions</h3>
+      <ul className="panel-notes">
+        <li><strong>Mock:</strong> written examples and sample ward context.</li>
+        <li><strong>Model:</strong> OpenAI uses the ward's score and selected annual projection. Current uses Year 1.</li>
+        <li>Sample context is excluded from Model requests. Failed requests show an error.</li>
+      </ul>
     </section>
     <section className="detail-section">
-      <h3>City-centre examples</h3>
-      <p className="small-copy">Premises are illustrative records with authored scores and inspection priorities. They are hidden by default and available in Mock only. Model does not include premises records. They are not verified inspections or live risk records.</p>
+      <h3>Sample map layers</h3>
+      <ul className="panel-notes">
+        <li>Premises and events are available in Mock, hidden by default.</li>
+        <li>Premises scores and inspection priorities are examples, not verified records.</li>
+        <li>The four hackathon events use archived demo dates and attendance. They do not change with the timeframe or affect ward scores.</li>
+      </ul>
     </section>
     <section className="detail-section">
-      <h3>Event examples</h3>
-      <p className="small-copy">The four original hackathon events are archived examples, available in Mock only. Their dates and attendance are demo values, not a verified calendar. They do not filter by the ward timeframe or affect ward scores and projections.</p>
+      <h3>Limitations</h3>
+      <p className="small-copy">This student project has not been validated for operational fire-safety decisions. A low score does not establish safety.</p>
     </section>
   </>;
 }

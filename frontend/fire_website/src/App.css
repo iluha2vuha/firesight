@@ -67,6 +67,10 @@ h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; line-height: 1.5; }
 .panel-meta { margin: 0 0 20px; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .ward-count { color: var(--muted); font-size: 12px; }
 .small-copy { margin: 0 0 13px; color: var(--muted); font-size: 12px; line-height: 1.75; }
+.panel-notes { margin:0; padding-left:17px; color:var(--muted); font-size:12px; line-height:1.65; }
+.panel-notes li + li { margin-top:8px; }
+.panel-notes strong { color:var(--text); font-weight:500; }
+.segmented-control + .panel-notes { margin-top:14px; }
 .search-field { display: flex; align-items: center; gap: 9px; margin: 20px 0 24px; padding: 3px 10px; min-height: 42px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--muted); }
 .search-field input { width: 100%; min-width: 0; min-height: 34px; background: transparent; border: 0; color: var(--text); font-size: 12px; outline: none; }
 .search-field input::placeholder { color: var(--muted); }

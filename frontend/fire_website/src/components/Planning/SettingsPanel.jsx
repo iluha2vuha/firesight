@@ -9,13 +9,16 @@ export default function SettingsPanel({ dataSource, setDataSource, nightMode, se
         <button aria-pressed={dataSource === 'model'} onClick={() => setDataSource('model')} disabled={status.status === 'ready' && !status.data?.model_loaded}>Model</button>
         <button aria-pressed={dataSource === 'mock'} onClick={() => setDataSource('mock')}>Mock</button>
       </div>
-      <p className="small-copy">Mock is the starting view and uses sample ward scores and optional high-risk premises and event examples. Model uses real historical statistics for ward scores and annual fire projections; it has no real premises or event records. Both use Current and Years 1–3.</p>
+      <ul className="panel-notes">
+        <li><strong>Mock:</strong> sample scores, premises and events. Opens by default.</li>
+        <li><strong>Model:</strong> scores and fire projections from historical data.</li>
+      </ul>
       {status.status === 'error' ? <>
-        <p className="error-copy" role="alert">Backend connection unavailable.</p>
+        <p className="error-copy" role="alert">Cannot connect to the backend.</p>
         <button className="secondary-button" onClick={onRetry}>Retry connection</button>
       </> : status.status === 'loading'
-        ? <p className="small-copy" role="status">Checking model availability…</p>
-        : <p className="availability">{status.data?.model_loaded ? 'Model output available' : 'Model output not loaded. Choose Mock to use sample scores.'}</p>}
+        ? <p className="small-copy" role="status">Checking model…</p>
+        : <p className="availability">{status.data?.model_loaded ? 'Model ready' : 'Model unavailable. Use Mock or check again.'}</p>}
       {status.status === 'ready' && !status.data?.model_loaded && <button className="secondary-button" onClick={onRetry}>Check model availability</button>}
     </section>
     <section className="detail-section">
@@ -28,9 +31,9 @@ export default function SettingsPanel({ dataSource, setDataSource, nightMode, se
     </section>
     <section className="detail-section">
       <h3>Map layers</h3>
-      <p className="small-copy">Use the dock at the top of the map to change layers or the scenario year.</p>
-      {dataSource === 'mock' ? <><p className="small-copy">{premisesStatus === 'loading' ? 'Loading city-centre examples…' : premisesStatus === 'ready' ? `${premisesCount} high-risk premises examples and 4 archived event examples available.` : 'Sample premises are unavailable.'}</p>
-      {premisesStatus === 'error' && <button className="secondary-button" onClick={onRetry}>Retry premises</button>}</> : <p className="small-copy">Premises and event examples are available in Mock only. Model shows ward scores and historical projections.</p>}
+      <p className="small-copy">Choose layers and timeframe in the top bar.</p>
+      {dataSource === 'mock' ? <><p className="small-copy">{premisesStatus === 'loading' ? 'Loading sample premises…' : premisesStatus === 'ready' ? `${premisesCount} sample premises · 4 archived events` : 'Sample premises unavailable.'}</p>
+      {premisesStatus === 'error' && <button className="secondary-button" onClick={onRetry}>Retry premises</button>}</> : <p className="small-copy">Switch to Mock for premises and event examples.</p>}
     </section>
   </>;
 }
