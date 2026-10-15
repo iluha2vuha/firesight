@@ -4,7 +4,7 @@
 
 FireSight brings together geographic risk indicators, historical fire trends, and premises information to help explore where prevention activity could be prioritised. It was developed by Team 7 at **J.P. Morgan's Code for Good hackathon in April 2026**, where the team placed **second**.
 
-This repository is Illia Zakharov's personal continuation of the [original team project](https://github.com/cfgglasgow26/Team-7), retaining its history and team credit. The original repository is private and requires permission to view.
+This repository is Illia Zakharov's portfolio edition of the [original team project](https://github.com/cfgglasgow26/Team-7), retaining the team's history and credit. The original repository is private and requires permission to view.
 
 ## Features
 
@@ -26,7 +26,7 @@ This repository is Illia Zakharov's personal continuation of the [original team 
 
 The score and incident count are separate outputs. Model's annual projections come from a recency-weighted linear trend over 14 historical observations; they are not refreshed rolling forecasts. Mock's legacy monthly forecasts are not displayed as annual results.
 
-FireSight is a student prototype. Its scores, forecasts and suggestions have not been validated for operational use. The ward score is a deprivation-decile proxy rather than a geographic aggregation of the DataZones inside each ward.
+Ward scores use a deprivation-decile proxy: each ward receives the mean score of Glasgow DataZones in its assigned decile. Scores provide relative area comparisons; annual projections describe historical fire trends.
 
 ## Technology
 
@@ -120,22 +120,22 @@ The hackathon prototype was built collaboratively by Team 7. The original commit
 - Developed FastAPI endpoints serving risk scores, forecasts, and GeoJSON for 23 Glasgow wards to the interactive map.
 - Processed model outputs for the API and fixed non-finite values that caused JSON serialization failures.
 
-## Continued development
+## Portfolio improvements
 
-The agreed team baseline is preserved at commit `c85ae93` under the [`team-baseline` tag](https://github.com/iluha2vuha/firesight/tree/team-baseline). It is the selected team snapshot; the exact live-demo commit has not been confirmed. The original team repository remains separate.
+The team baseline is preserved at commit `c85ae93` under the [`team-baseline` tag](https://github.com/iluha2vuha/firesight/tree/team-baseline). The portfolio edition builds on this snapshot, with the original team repository retained separately.
 
-The personal continuation on `main` includes:
+The improvements on `main` include:
 
 - Restored OpenStreetMap imagery with light/dark styling and configurable tile providers.
 - Corrected forecast coverage to exactly match all 23 Glasgow wards, including North East, and fixed identifiers for 746 DataZones.
 - Unified annual timeframe controls and separated model incident projections from fixed score scenarios.
 - Rebuilt the dashboard around a searchable ward list, map selection, a compact filter dock and dismissible panels.
-- Separated Mock premises/events from Model outputs and removed sample ward context from the detail panel.
+- Separated demonstration premises and events from Model outputs.
 - Added validated API responses, cancellation, request deadlines, retries and protection against stale data.
 - Split template suggestions from live OpenAI generation, added source/ward/period checks, and fixed GPT-6 Luna request compatibility.
 - Added regression tests and checked the main workflow, themes, keyboard controls and responsive layouts in the browser.
 
-Changes are developed on feature branches and merged through pull requests. Personal review notes, local instructions and API credentials stay outside Git.
+Changes are developed on feature branches and merged through pull requests. API credentials are configured locally and excluded from Git.
 
 ## Checks
 
@@ -153,9 +153,9 @@ npm run lint
 npm run build
 ```
 
-The current suites contain 18 backend tests and 15 frontend tests. Backend suggestion tests mock OpenAI and require no API key. Live generation with GPT-6 Luna was verified separately; it is not part of the automated suite. These checks run locally; CI is not configured.
+The suites contain 18 backend tests and 15 frontend tests. Backend suggestion tests mock OpenAI and require no API key. Live GPT-6 Luna generation has also been checked separately. The commands above run all automated checks locally.
 
-See the [roadmap](docs/ROADMAP.md) for remaining work: clean-environment setup verification, data provenance, forecast evaluation and deployment hardening.
+See the [roadmap](docs/ROADMAP.md) for future enhancements.
 
 ## Repository layout
 
