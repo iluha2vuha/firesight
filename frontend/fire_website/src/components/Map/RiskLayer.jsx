@@ -1,15 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import { selectForecast } from '../../utils/forecast';
+import { riskForTimeframe } from '../../utils/risk';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-
-const TIMEFRAME_ADJUSTMENTS = {
-  Current: 0,
-  'In 6 months': 4,
-  'In 1 year': 8,
-  'In 1.5 years': 12
-};
 
 const getRiskColor = (riskFactor) => {
   if (riskFactor >= 75) return '#d73027';
@@ -68,18 +62,11 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
   const mapDataForTimeframe = useMemo(() => {
     if (!geoData) return null;
 
-    const adjustment = TIMEFRAME_ADJUSTMENTS[timeFrame] ?? 0;
-
     return {
       ...geoData,
       features: (geoData.features ?? []).map((feature) => {
         const baseRisk = Number(feature.properties?.risk_score ?? 0);
-        const trendPct = Number(feature.properties?.prediction?.trend_pct ?? 0);
-        const trendAdjustment = Math.round((trendPct / 10) * (adjustment / 4));
-        const adjustedRiskFactor = Math.max(
-          0,
-          Math.min(100, baseRisk + adjustment + trendAdjustment)
-        );
+        const adjustedRiskFactor = riskForTimeframe(baseRisk, timeFrame);
 
         return {
           ...feature,
@@ -115,6 +102,8 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
     const drivers = Array.isArray(p.drivers) ? p.drivers : [];
     const prediction = p.prediction ?? {};
     const baseRisk = p.risk_score ?? timeframeRisk;
+    const scenarioHtml = timeFrame === 'Current' ? ''
+      : `<p class="popup-row"><b>Risk scenario:</b> current score +${riskForTimeframe(0, timeFrame)} points, capped at 100</p>`;
     const forecast = selectForecast(prediction, timeFrame);
     const isModel = p.data_source === 'model';
     const modelComponents = p.model_components ?? null;
@@ -152,6 +141,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
         <p class="popup-timeframe"><b>Time frame:</b> ${timeFrame}</p>
         <p class="popup-row"><b>Ward ID:</b> ${p.ward_id ?? 'n/a'}</p>
         <p class="popup-row"><b>Current Score:</b> ${baseRisk}/100</p>
+        ${scenarioHtml}
         ${forecastHtml}
 
         <div class="popup-card">
