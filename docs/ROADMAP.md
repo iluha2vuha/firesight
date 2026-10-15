@@ -4,7 +4,7 @@ An unchecked item is planned work, not a completed capability.
 
 ## First: make the demo reliable
 
-- [ ] **Restore map imagery.** Choose a provider, confirm its access requirements, configure it, and provide correct attribution. Verify actual tile images in the browser in day and night modes; HTTP 200 alone is insufficient. The map must show streets instead of API-key warnings.
+- [x] **Restore map imagery.** Replaced CARTO's key-gated tiles with standard OpenStreetMap tiles, retained attribution and night styling, and added provider configuration. Verified streets and place labels in the browser in both day and night modes; the frontend build and component lint check passed.
 - [ ] **Make setup reproducible.** Verify the README in a clean environment, document supported runtimes, and separate app dependencies from optional data tooling where useful. A new user should be able to start the demo from documented commands.
 - [ ] **Explain model availability.** Distinguish missing generated data from a backend connection problem, and show recovery instructions. Verify model mode enables with valid output.
 - [ ] **Handle data and network failures.** Show readable errors for unavailable APIs, malformed responses, and failed map requests. A failed request should not silently leave a blank screen.

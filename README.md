@@ -72,10 +72,12 @@ Open the address Vite prints, normally <http://localhost:5173>. Keep both server
 | `OPENAI_MODEL` | `backend/.env` | Optional model selection; defaults to `gpt-4o-mini`. |
 | `VITE_BACKEND_URL` | `frontend/fire_website/.env.local` | Backend address; defaults to `http://localhost:8000`. |
 | `VITE_EVENTS_API_URL` | `frontend/fire_website/.env.local` | Optional events endpoint; the app uses sample events if unavailable. |
+| `VITE_MAP_TILE_URL` | `frontend/fire_website/.env.local` | Optional light raster basemap URL; defaults to standard OpenStreetMap tiles. |
+| `VITE_MAP_ATTRIBUTION` | `frontend/fire_website/.env.local` | Attribution HTML required by a custom tile provider; defaults to OpenStreetMap credit. |
 
 Example settings are provided in `backend/.env.example` and `frontend/fire_website/.env.example`. Keep credentials out of Git, and keep the OpenAI key on the backend: frontend `VITE_` variables are visible to the browser.
 
-The current CARTO basemap requests display an API-key warning until the tile provider is configured. This external dependency is retained in the preserved baseline.
+The basemap uses standard OpenStreetMap tiles without an API key. Night mode styles the same tiles locally while preserving the risk-overlay colours. Follow the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/): retain visible attribution, allow normal browser caching and referrer headers, and do not bulk-download or prefetch tiles. The service is best-effort; review provider capacity before a wider deployment.
 
 ### Model data
 
@@ -109,6 +111,8 @@ The hackathon prototype was built collaboratively by Team 7. The original commit
 ## Baseline and continued development
 
 The agreed team baseline is preserved at commit `c85ae93` under the [`team-baseline` tag](https://github.com/iluha2vuha/firesight/tree/team-baseline). Continued development takes place on `portfolio/improvements`.
+
+**Improvements since the baseline:** restored the basemap by replacing CARTO's key-gated tiles with standard OpenStreetMap tiles, preserving day/night styling and adding configuration for alternative providers. The map was checked visually in both modes.
 
 The [improvement roadmap](docs/ROADMAP.md) tracks the planned work on reliability, data reproducibility, model evaluation, testing, and deployment.
 

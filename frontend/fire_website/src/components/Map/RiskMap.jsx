@@ -7,6 +7,10 @@ import RiskLayer from './RiskLayer';
 import 'leaflet/dist/leaflet.css';
 import './Map.css';
 
+const TILE_URL = import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTRIBUTION = import.meta.env.VITE_MAP_ATTRIBUTION
+  || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
 const RiskMap = ({
   timeFrame,
   dataSource = 'mock',
@@ -30,12 +34,10 @@ const RiskMap = ({
         zoomControl={false}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url={
-            nightMode
-              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-              : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-          }
+          attribution={TILE_ATTRIBUTION}
+          url={TILE_URL}
+          maxZoom={19}
+          referrerPolicy="strict-origin-when-cross-origin"
         />
 
         <RiskLayer timeFrame={timeFrame} hoveredRiskBand={hoveredRiskBand} dataSource={dataSource} />

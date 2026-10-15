@@ -20,9 +20,9 @@
   filter: contrast(0.98);
 }
 
-/* Night mode basemap (Carto dark tiles) */
+/* Style the same standard tiles for night mode; risk overlays keep their colours. */
 .risk-map-container.night-mode .leaflet-tile {
-  filter: saturate(0.95) contrast(1.05) brightness(0.92);
+  filter: invert(1) hue-rotate(180deg) saturate(0.35) contrast(0.9) brightness(0.85);
   opacity: 1;
 }
 
