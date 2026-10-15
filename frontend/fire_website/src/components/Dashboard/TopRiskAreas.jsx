@@ -1,10 +1,11 @@
 // src/components/Dashboard/TopRiskAreas.jsx
 import { useEffect, useState } from 'react';
+import { selectForecast } from '../../utils/forecast';
 import './TopRiskAreas.css';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
-const TopRiskAreas = ({ dataSource = 'mock' }) => {
+const TopRiskAreas = ({ dataSource = 'mock', timeFrame = 'Current' }) => {
   const [areas, setAreas]         = useState([]);
   const [aiById, setAiById]       = useState({});
   const [loadingById, setLoadingById] = useState({});
@@ -23,8 +24,12 @@ const TopRiskAreas = ({ dataSource = 'mock' }) => {
             name:     z.zonename || z.zoneid,
             risk:     z.riskscore ?? 0,
             drivers:  Array.isArray(z.drivers) ? z.drivers : [],
-            forecast: z.forecast6mo != null ? Math.round(z.forecast6mo) : null,
-            trend:    z.trendpct   != null ? z.trendpct              : null,
+            prediction: {
+              forecast_6mo: z.forecast6mo,
+              forecast_12mo: z.forecast12mo,
+              forecast_18mo: z.forecast18mo,
+              trend_pct: z.trendpct,
+            },
           })));
         } else {
           const res  = await fetch(`${BACKEND_URL}/api/strategic/wards`);
@@ -39,8 +44,7 @@ const TopRiskAreas = ({ dataSource = 'mock' }) => {
                 name:     w.ward_name,
                 risk:     w.risk_score,
                 drivers:  Array.isArray(w.drivers) ? w.drivers : [],
-                forecast: w.prediction?.forecast_6mo ?? null,
-                trend:    w.prediction?.trend_pct    ?? null,
+                prediction: w.prediction,
               }))
           );
         }
@@ -75,47 +79,55 @@ const TopRiskAreas = ({ dataSource = 'mock' }) => {
   return (
     <div className="top-areas">
       <h3>Top Risk {dataSource === 'model' ? 'Zones' : 'Wards'}</h3>
+      <p className="top-areas-context">
+        Ranked by current risk · {selectForecast(null, timeFrame).months}-month outlook
+      </p>
       {areas.length === 0 ? (
         <p className="top-areas-loading">Loading…</p>
       ) : (
         <ul>
-          {areas.map((a) => (
-            <li key={a.id} className="top-area-item">
-              <div className="top-area-header">
-                <span className="top-area-name">{a.name}</span>
-                <span className="top-area-score" style={{ color: riskColor(a.risk) }}>
-                  {a.risk}
-                </span>
-              </div>
+          {areas.map((a) => {
+            const forecast = selectForecast(a.prediction, timeFrame);
+            return (
+              <li key={a.id} className="top-area-item">
+                <div className="top-area-header">
+                  <span className="top-area-name">{a.name}</span>
+                  <span className="top-area-score" style={{ color: riskColor(a.risk) }}>
+                    {a.risk}
+                  </span>
+                </div>
 
-              {a.drivers.length > 0 && (
-                <p className="top-area-drivers">{a.drivers.slice(0, 2).join(' · ')}</p>
-              )}
+                {a.drivers.length > 0 && (
+                  <p className="top-area-drivers">{a.drivers.slice(0, 2).join(' · ')}</p>
+                )}
 
-              {a.forecast != null && (
-                <p className="top-area-forecast">
-                  6-month forecast: <strong>{a.forecast}</strong> incidents
-                  {a.trend != null && (
-                    <span className={`top-area-trend ${a.trend > 0 ? 'up' : a.trend < 0 ? 'down' : ''}`}>
-                      {' '}({a.trend > 0 ? '+' : ''}{a.trend}%)
-                    </span>
-                  )}
-                </p>
-              )}
+                {forecast.value != null ? (
+                  <p className="top-area-forecast">
+                    {forecast.months}-month forecast: <strong>{forecast.value}</strong> incidents
+                    {forecast.trend != null && (
+                      <span className={`top-area-trend ${forecast.trend > 0 ? 'up' : forecast.trend < 0 ? 'down' : ''}`}>
+                        {' '}({forecast.trend > 0 ? '+' : ''}{forecast.trend}%)
+                      </span>
+                    )}
+                  </p>
+                ) : (
+                  <p className="top-area-forecast">{forecast.months}-month forecast unavailable</p>
+                )}
 
-              <button
-                className="top-area-ai-btn"
-                onClick={() => fetchAI(a.id, a.mode)}
-                disabled={!!loadingById[a.id]}
-              >
-                {loadingById[a.id] ? 'Generating…' : 'AI Next Steps'}
-              </button>
+                <button
+                  className="top-area-ai-btn"
+                  onClick={() => fetchAI(a.id, a.mode)}
+                  disabled={!!loadingById[a.id]}
+                >
+                  {loadingById[a.id] ? 'Generating…' : 'AI Next Steps (6-month)'}
+                </button>
 
-              {aiById[a.id] && (
-                <div className="top-area-ai-text">{aiById[a.id]}</div>
-              )}
-            </li>
-          ))}
+                {aiById[a.id] && (
+                  <div className="top-area-ai-text">{aiById[a.id]}</div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

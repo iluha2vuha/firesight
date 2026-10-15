@@ -14,6 +14,12 @@
   margin: 0;
 }
 
+.top-areas-context {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 11px;
+}
+
 .top-areas ul {
   list-style: none;
   margin: 0;
@@ -112,7 +118,8 @@
   color: rgba(248, 250, 252, 0.9);
 }
 
-.night-mode .top-areas-loading {
+.night-mode .top-areas-loading,
+.night-mode .top-areas-context {
   color: rgba(148, 163, 184, 0.8);
 }
 

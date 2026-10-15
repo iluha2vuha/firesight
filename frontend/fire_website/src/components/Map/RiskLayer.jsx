@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { GeoJSON } from 'react-leaflet';
+import { selectForecast } from '../../utils/forecast';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
@@ -114,20 +115,19 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
     const drivers = Array.isArray(p.drivers) ? p.drivers : [];
     const prediction = p.prediction ?? {};
     const baseRisk = p.risk_score ?? timeframeRisk;
-    const forecast6 = prediction.forecast_6mo;
-    const trendPct = prediction.trend_pct;
+    const forecast = selectForecast(prediction, timeFrame);
     const isModel = p.data_source === 'model';
     const modelComponents = p.model_components ?? null;
 
-    const forecastLower = prediction.forecast_lower;
-    const forecastUpper = prediction.forecast_upper;
-    const ciText = forecastLower != null && forecastUpper != null
-      ? ` <span class="popup-ci">(range ${forecastLower}–${forecastUpper})</span>`
+    const ciText = forecast.lower != null && forecast.upper != null
+      ? ` <span class="popup-ci">(range ${forecast.lower}–${forecast.upper})</span>`
       : '';
-    const forecastHtml = forecast6 != null
-      ? `<p class="popup-row"><b>6-month forecast:</b> ${forecast6} incidents${ciText}</p>
-         <p class="popup-row"><b>Trend:</b> ${trendPct != null ? trendPct + '%' : 'n/a'}</p>`
-      : `<p class="popup-row popup-pending">⚠ Forecast unavailable — incident data pending</p>`;
+    const trendHtml = forecast.trend != null
+      ? `<p class="popup-row"><b>6-month trend:</b> ${forecast.trend}%</p>`
+      : '';
+    const forecastHtml = forecast.value != null
+      ? `<p class="popup-row"><b>${forecast.months}-month forecast:</b> ${forecast.value} incidents${ciText}</p>${trendHtml}`
+      : `<p class="popup-row popup-pending">⚠ ${forecast.months}-month forecast unavailable — incident data pending</p>`;
 
     const componentsBadge = isModel && modelComponents
       ? `<span class="popup-components-badge">${modelComponents}/5 data sources</span>`
@@ -170,7 +170,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
               data-mode="ward"
               data-id="${wardId}"
             >
-              AI Actionable Next Steps
+              AI Next Steps (6-month)
             </button>
             <span class="popup-ai-meta" data-ai-meta></span>
           </div>
@@ -222,7 +222,7 @@ const RiskLayer = ({ timeFrame = 'Current', hoveredRiskBand = null, dataSource =
               'Could not load the AI overview right now. Please try again.';
           } finally {
             btn.disabled = false;
-            btn.textContent = 'AI Actionable Next Steps';
+            btn.textContent = 'AI Next Steps (6-month)';
           }
         });
       });

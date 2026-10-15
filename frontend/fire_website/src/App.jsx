@@ -139,7 +139,7 @@ function App() {
         />
 
         <div className={`top-risk-panel${nightMode ? ' night-mode' : ''}`}>
-          <TopRiskAreas dataSource={dataSource} />
+          <TopRiskAreas dataSource={dataSource} timeFrame={timeFrame} />
         </div>
       </main>
     </div>
