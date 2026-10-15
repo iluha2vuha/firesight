@@ -19,9 +19,9 @@ An unchecked item is planned work, not a completed capability.
 ## Then: prepare a portfolio release
 
 - [ ] Confirm the hackathon submission commit and tag it `hackathon-final`.
-- [ ] Create the personal fork once forking is permitted.
+- [x] Create a standalone personal repository, retaining team credit, history, and the baseline tag.
 - [x] Document individual hackathon contributions and retain team credit.
-- [ ] Resolve permission and visibility for a public portfolio version.
+- [x] Confirm team agreement and establish the public portfolio repository.
 - [ ] Capture screenshots after the important flows work.
 - [ ] Deploy a reproducible demo and document configuration and limitations.
 - [ ] Write a before-and-after account linking each improvement to its implementation and validation.

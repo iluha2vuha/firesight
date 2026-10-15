@@ -6,11 +6,11 @@ FireSight brings area risk indicators, historical fire trends, and prototype pre
 
 ## Project status
 
-This checkout is being prepared for continued development as a personal portfolio project. Team work and subsequent personal improvements are credited separately.
+This repository continues the hackathon prototype as a personal portfolio project. Team work and subsequent personal improvements are credited separately.
 
 - **Preserved team baseline:** tag `team-baseline`, commit `c85ae93`. This is the latest team `main` retrieved; it is not yet confirmed as the final hackathon submission.
 - **Development branch:** `portfolio/improvements`.
-- **Personal fork:** pending. The private team repository currently has forking disabled; no personal fork has been created or published.
+- **Personal repository:** [iluha2vuha/firesight](https://github.com/iluha2vuha/firesight), a public, standalone continuation retaining the original team history and credit.
 - **Known issues:** CARTO tiles display an API-key warning, and model mode requires generated data files. See the [roadmap](docs/ROADMAP.md).
 
 ## What the prototype includes
