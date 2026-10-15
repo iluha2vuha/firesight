@@ -26,7 +26,7 @@ FireSight is a student prototype for exploring prevention planning. Its scores a
 | Backend | Python and FastAPI for risk data, forecasts, GeoJSON, and explanations. |
 | Data pipeline | pandas and NumPy for processing SIMD indicators and historical fire statistics. |
 | Risk model | Weighted DataZone indicators and linear trends in historical ward fire counts. |
-| Optional explanations | OpenAI API, with built-in explanations when unavailable. |
+| Planning suggestions | Mock uses template examples. Model generates suggestions through the OpenAI API for the selected ward and timeframe, with explicit API errors and no sample fallback. |
 
 ## Run locally
 
@@ -75,6 +75,8 @@ Open the address Vite prints, normally <http://localhost:5173>. Keep both server
 | `VITE_EVENTS_API_URL` | `frontend/fire_website/.env.local` | Optional events endpoint; the app uses sample events if unavailable. |
 | `VITE_MAP_TILE_URL` | `frontend/fire_website/.env.local` | Optional light raster basemap URL; defaults to standard OpenStreetMap tiles. |
 | `VITE_MAP_ATTRIBUTION` | `frontend/fire_website/.env.local` | Attribution HTML required by a custom tile provider; defaults to OpenStreetMap credit. |
+
+Model suggestions require `OPENAI_API_KEY` on the backend. After adding or changing it, restart the backend. Missing credentials, quota/rate limits, timeouts and provider errors are reported; scores and projections remain available. The integration uses the [official OpenAI Python SDK](https://developers.openai.com/api/reference/python).
 
 Example settings are provided in `backend/.env.example` and `frontend/fire_website/.env.example`. Keep credentials out of Git, and keep the OpenAI key on the backend: frontend `VITE_` variables are visible to the browser.
 

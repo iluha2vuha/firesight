@@ -25,12 +25,11 @@ class ModelDataContractTests(unittest.TestCase):
 
     def test_model_explanations_use_annual_units(self):
         ward = main.wards_by_id['S13003133']
-        explanation = main.fallback_ward_explanation_model(ward)
-        self.assertIn('Year 1', explanation)
-        self.assertNotIn('6 months', explanation)
-        context = main._ai_context('ward', ward, source='model')
-        self.assertIn('annual count', context)
-        self.assertNotIn('/6mo', context)
+        context = main.build_suggestion_context('ward', ward, period='Year 2')
+        self.assertEqual(context['selected_annual_projection'], 23)
+        self.assertEqual(context['selected_projection_year'], 2)
+        self.assertNotIn('drivers', context)
+        self.assertNotIn('forecast_lower', context)
         payload = main.build_explain_payload('ward', ward, source='model')
         self.assertEqual(payload['forecast_period_unit'], 'year')
         self.assertEqual(payload['forecast_year_1'], 24)

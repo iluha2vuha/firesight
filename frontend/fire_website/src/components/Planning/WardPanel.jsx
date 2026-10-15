@@ -26,30 +26,23 @@ export default function WardPanel({ features, selected, onSelect, onBack, dataSo
         </div>
         <span className="band-badge" style={{ color: scoreColor(score) }}>{bandLabel(score)} priority</span>
       </div>
-      {timeFrame !== 'Current' && <p className="scenario-note">
-        Current score {p.risk_score} + {displayedScore({ properties: { risk_score: 0 } }, timeFrame)} scenario points, capped at 100. This is an illustrative adjustment.
-      </p>}
-      <section className="detail-section">
-        <h3>{dataSource === 'model' ? `${forecast.label} projection` : 'Annual projections'}</h3>
+      {dataSource === 'model' && <section className="detail-section">
+        <h3>{forecast.label} projection</h3>
         {forecast.value != null ? <>
           <div className="forecast-total">{forecast.value}<span> projected incidents</span></div>
-          {forecast.lower != null && forecast.upper != null && <p className="small-copy">Indicative range {forecast.lower}–{forecast.upper}. Available for Year 1 only.</p>}
+          {forecast.lower != null && forecast.upper != null && <p className="projection-range">Range {forecast.lower}–{forecast.upper}</p>}
           <ForecastChart prediction={p.prediction} dataSource={dataSource}/>
-          <p className="small-copy">Each bar is one projected year, not a cumulative total. Based on 2009/10–2022/23 observations.</p>
-        </> : <p className="small-copy">
-          {dataSource === 'mock' ? 'Mock provides sample scores only. Switch to Model in Settings for annual fire projections.' : 'No annual projection is available for this ward.'}
-        </p>}
-      </section>
-      <section className="detail-section">
-        <h3>Ward context</h3>
-        <p className="small-copy">Supplied with the ward data, not measured contributions to the score.</p>
+        </> : <p className="small-copy">Projection unavailable.</p>}
+      </section>}
+      {dataSource === 'mock' && <section className="detail-section">
+        <h3>Sample context</h3>
         <div className="context-list">{(p.drivers || []).map((driver) => <p key={driver}>{driver}</p>)}</div>
-      </section>
+      </section>}
+      <Guidance key={`${p.ward_id}-${dataSource}-${timeFrame}`} wardId={p.ward_id} dataSource={dataSource} timeFrame={timeFrame}/>
       <details key={p.ward_id} className="record-details">
         <summary>Ward information</summary>
         <dl><div><dt>Ward code</dt><dd>{p.ward_id}</dd></div><div><dt>Current score</dt><dd>{p.risk_score} / 100</dd></div></dl>
       </details>
-      {dataSource === 'model' && <Guidance key={`${p.ward_id}-${dataSource}`} wardId={p.ward_id}/>}
     </>;
   }
 

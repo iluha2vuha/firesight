@@ -19,6 +19,11 @@ export default function DataPanel() {
       <p className="small-copy">The range is an indicative residual-based band for Year 1. Accuracy and uncertainty coverage have not been validated. Mock provides sample scores, with no annual incident forecasts.</p>
     </section>
     <section className="detail-section">
+      <h3>Planning suggestions</h3>
+      <p className="small-copy">Mock suggestions are template examples and never call OpenAI. Model suggestions are generated through the OpenAI API from the selected ward’s model score, selected annual projection and timeframe. Current uses the Year 1 projection. API failures are shown as errors; sample text is never substituted in Model mode.</p>
+      <p className="small-copy">Authored ward context appears in Mock only and is not sent as model evidence. Generated options have not been validated for operational decisions.</p>
+    </section>
+    <section className="detail-section">
       <h3>Scenario years</h3>
       <p className="small-copy">Year 1, 2 and 3 add 4, 8 and 12 points to the current score, capped at 100. These adjustments illustrate scenarios; they are not changes learned by the model. The same controls are used in both modes.</p>
     </section>

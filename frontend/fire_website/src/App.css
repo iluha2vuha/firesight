@@ -95,7 +95,7 @@ h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; line-height: 1.5; }
 .score-number { margin-top: 8px; font-size: 32px; line-height: 1.25; font-weight: 500; font-variant-numeric: tabular-nums; }
 .score-number > span { margin-left: 6px; font-size: 13px; color: var(--muted); }
 .band-badge { font-size: 12px; white-space: nowrap; }
-.scenario-note { margin: 12px 0 0; font-size: 11px; color: var(--muted); line-height: 1.7; }
+.projection-range { margin:8px 0 0; color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums; }
 .detail-section { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--line); }
 .first-section { margin-top: 25px; padding-top: 0; border-top: 0; }
 .source-tag { margin: 0 0 12px; color: var(--muted); font-size: 11px; line-height: 1.6; }
